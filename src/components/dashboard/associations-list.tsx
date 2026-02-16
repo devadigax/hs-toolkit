@@ -30,12 +30,12 @@ export function AssociationsList({ associations, currentType }: AssociationsList
     };
 
     return (
-        <Card className="mt-6">
+        <Card className="h-full">
             <CardHeader>
                 <CardTitle>Associations</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="space-y-6">
                     {Object.entries(associations).map(([type, items]) => {
                         // items is a CollectionResponseSimplePublicObjectId, so items.results is the array
                         const rawResults = (items as any).results || [];

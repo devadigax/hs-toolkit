@@ -17,7 +17,7 @@ import { Client } from "@hubspot/api-client";
 import { cookies } from "next/headers";
 import { COOKIE_NAME, REFRESH_TOKEN_COOKIE, EXPIRES_IN_COOKIE } from "@/lib/constants";
 
-export const getHubSpotClient = async () => {
+export const getAccessToken = async () => {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get(COOKIE_NAME)?.value;
     const refreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE)?.value;
@@ -26,21 +26,17 @@ export const getHubSpotClient = async () => {
         throw new Error("No value for refresh token found in cookies");
     }
 
-    const client = new Client();
-
-    // Check if access token is present and valid (naive check existence)
-    // A better approach would be to check expiration if stored
     const expiresIn = cookieStore.get(EXPIRES_IN_COOKIE)?.value;
     const now = Date.now();
 
     if (accessToken && expiresIn && parseInt(expiresIn) > now) {
-        client.setAccessToken(accessToken);
-        return client;
+        return accessToken;
     }
 
     // Refresh token
     try {
         console.log("Access token expired or missing. Refreshing...");
+        const client = new Client();
         const tokenResponse = await client.oauth.tokensApi.create(
             "refresh_token",
             undefined, // code is undefined for refresh_token grant
@@ -52,17 +48,20 @@ export const getHubSpotClient = async () => {
 
         const { accessToken: newAccessToken } = tokenResponse;
 
-        client.setAccessToken(newAccessToken);
-
         // Note: We don't save cookies here because this might run in a Server Component.
         // Middleware (src/proxy.ts) handles the persistence of refreshed tokens.
 
-        return client;
+        return newAccessToken;
 
     } catch (error) {
         console.error("Error refreshing token:", error);
         throw new Error("Failed to refresh token");
     }
+};
+
+export const getHubSpotClient = async () => {
+    const accessToken = await getAccessToken();
+    return new Client({ accessToken });
 };
 
 export const getHubSpotClientWithToken = (token: string) => {

@@ -47,16 +47,20 @@ export default async function ObjectPage({
                         })()} Details
                     </h2>
                 </div>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Properties</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <PropertyGrid properties={properties} type={type} id={id} />
-                    </CardContent>
-                </Card>
+                <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+                    <Card className="col-span-2">
+                        <CardHeader>
+                            <CardTitle>Properties</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <PropertyGrid properties={properties} type={type} id={id} />
+                        </CardContent>
+                    </Card>
 
-                <AssociationsList associations={associations} currentType={type} />
+                    <div className="col-span-1">
+                        <AssociationsList associations={associations} currentType={type} />
+                    </div>
+                </div>
             </div>
         );
     } catch (error: any) {

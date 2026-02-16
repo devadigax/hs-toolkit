@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AssociationsList } from "@/components/dashboard/associations-list";
+import { PropertyGrid } from "@/components/dashboard/property-grid";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -65,41 +66,52 @@ export default async function EngagementPage({ params }: { params: Promise<{ id:
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="col-span-4">
-                    <CardHeader>
-                        <CardTitle>Details</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {getBody(properties) && (
-                            <div className="prose dark:prose-invert max-w-none">
-                                <div dangerouslySetInnerHTML={{ __html: getBody(properties) }} />
-                            </div>
-                        )}
+            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+                <div className="col-span-2 space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {getBody(properties) && (
+                                <div className="prose dark:prose-invert max-w-none">
+                                    <div dangerouslySetInnerHTML={{ __html: getBody(properties) }} />
+                                </div>
+                            )}
 
-                        <Separator />
+                            <Separator />
 
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <p className="font-semibold text-muted-foreground">Date</p>
-                                <p>{properties.hs_timestamp ? format(new Date(properties.hs_timestamp), "PPP p") : "-"}</p>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p className="font-semibold text-muted-foreground">Date</p>
+                                    <p>{properties.hs_timestamp ? format(new Date(properties.hs_timestamp), "PPP p") : "-"}</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-muted-foreground">Owner ID</p>
+                                    <p>{properties.hubspot_owner_id || "-"}</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-muted-foreground">Type</p>
+                                    <p>{properties.hs_engagement_type}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="font-semibold text-muted-foreground">Owner ID</p>
-                                <p>{properties.hubspot_owner_id || "-"}</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold text-muted-foreground">Type</p>
-                                <p>{properties.hs_engagement_type}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
 
-                <div className="col-span-3">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Properties</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <PropertyGrid properties={properties} type="engagements" id={id} />
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="col-span-1">
                     <AssociationsList associations={associations} currentType="engagements" />
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

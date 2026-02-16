@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wrench } from "lucide-react";
 import { CopyDealEngagementsCard } from "@/components/tools/copy-deal-engagements-card";
+import { UnlinkDealActivitiesCard } from "@/components/tools/unlink-deal-activities-card";
 
 export default function ToolsPage() {
     return (
@@ -10,6 +11,7 @@ export default function ToolsPage() {
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <CopyDealEngagementsCard />
+                <UnlinkDealActivitiesCard />
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

@@ -14,6 +14,7 @@ import {
     FileText,
     Activity,
     Wrench,
+    ContactRound,
 } from "lucide-react";
 
 export function Sidebar({ className }: { className?: string }) {
@@ -26,9 +27,14 @@ export function Sidebar({ className }: { className?: string }) {
             icon: LayoutDashboard,
         },
         {
+            href: "/dashboard/users",
+            label: "Users",
+            icon: Users,
+        },
+        {
             href: "/dashboard/contacts",
             label: "Contacts",
-            icon: Users,
+            icon: ContactRound,
         },
         {
             href: "/dashboard/companies",
