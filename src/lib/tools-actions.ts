@@ -38,7 +38,7 @@ export async function copyDealEngagements(sourceDealId: string, targetDealId: st
                 body: searchRequest,
             });
 
-            const searchResult = await searchResponse.json();
+            const searchResult: any = await searchResponse.json();
             const results = searchResult.results || [];
             allEngagements = allEngagements.concat(results);
 
