@@ -2,6 +2,8 @@
 
 A HubSpot Toolkit dashboard application built with Next.js, Shadcn/UI, and the HubSpot API.
 
+![HS Toolkit Dashboard](public/dashboard.jpg)
+
 ## Features
 
 -   **Dashboard**: Overview of Contacts, Companies, Deals, Tickets, Products, Quotes, and Line Items.

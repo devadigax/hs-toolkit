@@ -6,80 +6,78 @@ import { Client } from "@hubspot/api-client";
 import { cookies } from "next/headers";
 import { REFRESH_TOKEN_COOKIE, COOKIE_NAME, EXPIRES_IN_COOKIE } from "@/lib/constants";
 import { serialize } from "@/lib/utils";
+import { hashString } from "@/lib/server-utils";
 
 export async function getDashboardStats() {
     const accessToken = await getAccessToken();
-    return cachedGetDashboardStats(accessToken);
-}
 
-const cachedGetDashboardStats = unstable_cache(async (accessToken: string) => {
-    const hubspotClient = new Client({ accessToken });
+    return unstable_cache(async () => {
+        const hubspotClient = new Client({ accessToken });
 
-    const getCount = async (api: any) => {
-        const searchRequest = {
-            limit: 1,
-            filterGroups: [],
+        const getCount = async (api: any) => {
+            const searchRequest = {
+                limit: 1,
+                filterGroups: [],
+            };
+            const response = await api.doSearch(searchRequest);
+            return response.total;
         };
-        const response = await api.doSearch(searchRequest);
-        return response.total;
-    };
 
-    const contactsCount = await getCount(hubspotClient.crm.contacts.searchApi).catch(() => 0);
-    const companiesCount = await getCount(hubspotClient.crm.companies.searchApi).catch(() => 0);
-    const dealsCount = await getCount(hubspotClient.crm.deals.searchApi).catch(() => 0);
-    const ticketsCount = await getCount(hubspotClient.crm.tickets.searchApi).catch(() => 0);
-    const productsCount = await getCount(hubspotClient.crm.products.searchApi).catch(() => 0);
+        const contactsCount = await getCount(hubspotClient.crm.contacts.searchApi).catch(() => 0);
+        const companiesCount = await getCount(hubspotClient.crm.companies.searchApi).catch(() => 0);
+        const dealsCount = await getCount(hubspotClient.crm.deals.searchApi).catch(() => 0);
+        const ticketsCount = await getCount(hubspotClient.crm.tickets.searchApi).catch(() => 0);
+        const productsCount = await getCount(hubspotClient.crm.products.searchApi).catch(() => 0);
 
-    return {
-        counts: {
-            contacts: contactsCount,
-            companies: companiesCount,
-            deals: dealsCount,
-            tickets: ticketsCount,
-            products: productsCount,
-        }
-    };
-}, ['dashboard-stats'], { tags: ['dashboard'] });
+        return {
+            counts: {
+                contacts: contactsCount,
+                companies: companiesCount,
+                deals: dealsCount,
+                tickets: ticketsCount,
+                products: productsCount,
+            }
+        };
+    }, ['dashboard-stats', hashString(accessToken)], { tags: ['dashboard'] })();
+}
 
 export async function getAccountDetails() {
     const accessToken = await getAccessToken();
-    return cachedGetAccountDetails(accessToken);
-}
 
-const cachedGetAccountDetails = unstable_cache(async (accessToken: string) => {
-    const hubspotClient = new Client({ accessToken });
-    try {
-        const response = await hubspotClient.apiRequest({
-            method: 'GET',
-            path: '/account-info/v3/details',
-        });
-        const json = await response.json();
-        return serialize(json);
-    } catch (e) {
-        console.error("Error fetching account details:", e);
-        return null;
-    }
-}, ['account-details'], { tags: ['dashboard'] });
+    return unstable_cache(async () => {
+        const hubspotClient = new Client({ accessToken });
+        try {
+            const response = await hubspotClient.apiRequest({
+                method: 'GET',
+                path: '/account-info/v3/details',
+            });
+            const json = await response.json();
+            return serialize(json);
+        } catch (e) {
+            console.error("Error fetching account details:", e);
+            return null;
+        }
+    }, ['account-details', hashString(accessToken)], { tags: ['dashboard'] })();
+}
 
 export async function getDailyApiUsage() {
     const accessToken = await getAccessToken();
-    return cachedGetDailyApiUsage(accessToken);
-}
 
-const cachedGetDailyApiUsage = unstable_cache(async (accessToken: string) => {
-    const hubspotClient = new Client({ accessToken });
-    try {
-        const response = await hubspotClient.apiRequest({
-            method: 'GET',
-            path: '/account-info/v3/api-usage/daily/private-apps',
-        });
-        const json = await response.json();
-        return serialize(json);
-    } catch (e) {
-        console.error("Error fetching daily API usage:", e);
-        return null;
-    }
-}, ['daily-api-usage'], { tags: ['dashboard'] });
+    return unstable_cache(async () => {
+        const hubspotClient = new Client({ accessToken });
+        try {
+            const response = await hubspotClient.apiRequest({
+                method: 'GET',
+                path: '/account-info/v3/api-usage/daily/private-apps',
+            });
+            const json = await response.json();
+            return serialize(json);
+        } catch (e) {
+            console.error("Error fetching daily API usage:", e);
+            return null;
+        }
+    }, ['daily-api-usage', hashString(accessToken)], { tags: ['dashboard'] })();
+}
 
 export async function refreshDashboard() {
     updateTag('dashboard');

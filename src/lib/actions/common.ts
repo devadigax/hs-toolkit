@@ -5,6 +5,7 @@ import { unstable_cache, updateTag } from "next/cache";
 import { Client } from "@hubspot/api-client";
 import { serialize } from "@/lib/utils";
 import { OBJECT_PROPERTIES, ASSOCIATION_MAP, DEFAULT_SORT } from "./config";
+import { hashString } from "@/lib/server-utils";
 
 export async function searchObjects(
     api: any,
@@ -89,7 +90,7 @@ const getCachedFirstPage = async (type: keyof typeof OBJECT_PROPERTIES, limit: n
             after: undefined,
         };
         return serialize(await api.doSearch(searchRequest));
-    }, [`${type}-list-first-page-${limit}`], { tags: [`${type}-list`] })();
+    }, [`${type}-list-first-page-${limit}-${hashString(accessToken)}`], { tags: [`${type}-list`] })();
 };
 
 export async function refreshObjectList(type: string) {
@@ -98,24 +99,24 @@ export async function refreshObjectList(type: string) {
 
 export async function getAllProperties(type: string) {
     const accessToken = await getAccessToken();
-    return cachedGetAllProperties(type, accessToken);
-}
 
-const cachedGetAllProperties = unstable_cache(async (type: string, accessToken: string) => {
-    const hubspotClient = new Client({ accessToken });
-    const objectType = type === "line-items" ? "line_items" : (type === "engagements" ? "engagements" : type);
+    return unstable_cache(async () => {
+        const hubspotClient = new Client({ accessToken });
+        const objectType = type === "line-items" ? "line_items" : (type === "engagements" ? "engagements" : type);
 
-    try {
-        const response = await hubspotClient.crm.properties.coreApi.getAll(objectType);
-        return response.results.map((prop: any) => prop.name);
-    } catch (e) {
-        console.error("Error fetching properties for " + type, e);
-        if (type === "engagements") {
-            return OBJECT_PROPERTIES.engagements;
+        try {
+            const response = await hubspotClient.crm.properties.coreApi.getAll(objectType);
+            return response.results.map((prop: any) => prop.name);
+        } catch (e) {
+            console.error("Error fetching properties for " + type, e);
+            if (type === "engagements") {
+                return OBJECT_PROPERTIES.engagements;
+            }
+            return [];
         }
-        return [];
-    }
-}, ['all-properties'], { tags: ['properties'] });
+    }, ['all-properties', type, hashString(accessToken)], { tags: ['properties'] })();
+} // Note: We might want to scope this too if properties vary by user, but usually schema is account-wide. Safer to scope it anyway.
+
 
 export async function getObject(type: string, id: string) {
     const hubspotClient = await getHubSpotClient();
