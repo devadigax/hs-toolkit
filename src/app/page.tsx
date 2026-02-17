@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Github } from "lucide-react";
+import { PrivateTokenForm } from "@/components/auth/private-token-form";
 
 export default function LoginPage() {
   return (
@@ -71,10 +72,13 @@ export default function LoginPage() {
                 <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
                 <CardDescription className="text-base">Login to access your HS Toolkit dashboard</CardDescription>
               </CardHeader>
-              <CardContent className="pb-8">
+              <CardContent className="pb-8 space-y-6">
                 <Button asChild className="w-full h-11 text-base shadow-sm hover:shadow-md transition-all">
-                  <Link href="/api/auth/login">Login with HubSpot</Link>
+                  <Link href="/api/auth/login">Login with HubSpot (OAuth)</Link>
                 </Button>
+
+                <PrivateTokenForm />
+
                 <div className="mt-6 text-center text-xs text-muted-foreground">
                   By clicking continue, you agree to our <span className="underline hover:text-gray-900 cursor-pointer">Terms of Service</span> and <span className="underline hover:text-gray-900 cursor-pointer">Privacy Policy</span>.
                 </div>

@@ -16,10 +16,17 @@ process.emitWarning = function (warning: string | Error, ...args: unknown[]) {
 import { Client } from "@hubspot/api-client";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { COOKIE_NAME, REFRESH_TOKEN_COOKIE, EXPIRES_IN_COOKIE } from "@/lib/constants";
+import { COOKIE_NAME, REFRESH_TOKEN_COOKIE, EXPIRES_IN_COOKIE, PRIVATE_TOKEN_COOKIE } from "@/lib/constants";
 
 export const getAccessToken = async () => {
     const cookieStore = await cookies();
+
+    // Check for private token first
+    const privateToken = cookieStore.get(PRIVATE_TOKEN_COOKIE)?.value;
+    if (privateToken) {
+        return privateToken;
+    }
+
     const accessToken = cookieStore.get(COOKIE_NAME)?.value;
     const refreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE)?.value;
 

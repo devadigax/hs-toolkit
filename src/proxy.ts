@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { REFRESH_TOKEN_COOKIE, COOKIE_NAME, EXPIRES_IN_COOKIE } from "@/lib/constants";
+import { REFRESH_TOKEN_COOKIE, COOKIE_NAME, EXPIRES_IN_COOKIE, PRIVATE_TOKEN_COOKIE } from "@/lib/constants";
 
 export async function proxy(request: NextRequest) {
     const refreshToken = request.cookies.get(REFRESH_TOKEN_COOKIE);
@@ -8,6 +8,12 @@ export async function proxy(request: NextRequest) {
     const isPublicRoute = request.nextUrl.pathname === "/" || request.nextUrl.pathname.startsWith("/_next") || request.nextUrl.pathname.startsWith("/static");
 
     if (isAuthRoute || isPublicRoute) {
+        return NextResponse.next();
+    }
+
+    // Allow if private token is present
+    const privateToken = request.cookies.get(PRIVATE_TOKEN_COOKIE);
+    if (privateToken) {
         return NextResponse.next();
     }
 
