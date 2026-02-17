@@ -1,3 +1,4 @@
+import { Sort } from "@/types/hubspot";
 
 export const OBJECT_PROPERTIES = {
     contacts: ["firstname", "lastname", "email", "phone", "website", "company", "country", "createdate"],
@@ -11,13 +12,13 @@ export const OBJECT_PROPERTIES = {
 } as const;
 
 export const ASSOCIATION_MAP: Record<string, string[]> = {
-    contacts: ["companies", "deals", "tickets"],
-    companies: ["contacts", "deals", "tickets"],
-    deals: ["contacts", "companies", "line_items", "tickets"],
-    tickets: ["contacts", "companies", "deals"],
+    contacts: ["companies", "deals", "tickets", "engagements"],
+    companies: ["contacts", "deals", "tickets", "engagements"],
+    deals: ["contacts", "companies", "line_items", "tickets", "engagements"],
+    tickets: ["contacts", "companies", "deals", "engagements"],
     quotes: ["deals", "line_items"],
     "line-items": ["deals", "quotes"],
     engagements: ["contacts", "companies", "deals", "tickets"],
 };
 
-export const DEFAULT_SORT = { propertyName: "createdate", direction: "DESCENDING" };
+export const DEFAULT_SORT: Sort = { propertyName: "createdate", direction: "DESCENDING" };

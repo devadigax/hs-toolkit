@@ -3,7 +3,7 @@ import "server-only";
 // Suppress the "url.parse() behavior is not standardized" deprecation warning
 // This comes from the @hubspot/api-client dependency (likely via node-fetch v2)
 const originalEmitWarning = process.emitWarning;
-process.emitWarning = function (warning: string | Error, ...args: any[]) {
+process.emitWarning = function (warning: string | Error, ...args: unknown[]) {
     if (
         (typeof warning === "string" && warning.includes("url.parse()")) ||
         (typeof warning === "object" && warning.message && warning.message.includes("url.parse()"))
@@ -14,6 +14,7 @@ process.emitWarning = function (warning: string | Error, ...args: any[]) {
 };
 
 import { Client } from "@hubspot/api-client";
+import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { COOKIE_NAME, REFRESH_TOKEN_COOKIE, EXPIRES_IN_COOKIE } from "@/lib/constants";
 
@@ -23,7 +24,7 @@ export const getAccessToken = async () => {
     const refreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE)?.value;
 
     if (!refreshToken) {
-        throw new Error("No value for refresh token found in cookies");
+        redirect("/api/auth/login");
     }
 
     const expiresIn = cookieStore.get(EXPIRES_IN_COOKIE)?.value;

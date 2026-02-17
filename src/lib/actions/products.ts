@@ -1,7 +1,7 @@
 "use server";
 
 import { getHubSpotClient } from "@/lib/hubspot-server";
-import { searchObjects } from "./common";
+import { searchObjects, SearchCapableApi } from "./common";
 import { OBJECT_PROPERTIES } from "./config";
 
 export async function getProducts(limit: number = 100, after?: string, query?: string, showInactive: boolean = false) {
@@ -24,7 +24,7 @@ export async function getProducts(limit: number = 100, after?: string, query?: s
     }
 
     return searchObjects(
-        hubspotClient.crm.products.searchApi,
+        hubspotClient.crm.products.searchApi as unknown as SearchCapableApi,
         OBJECT_PROPERTIES.products,
         limit,
         after,

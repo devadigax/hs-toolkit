@@ -1,8 +1,9 @@
 export interface HubSpotObject {
     id: string;
-    properties: Record<string, any>;
+    properties: Record<string, string | null>;
     createdAt: string;
     updatedAt: string;
+    archived?: boolean;
     associations?: Record<string, HubSpotAssociation>;
 }
 
@@ -15,7 +16,7 @@ export interface HubSpotAssociationResult {
     type: string;
 }
 
-export interface SearchResult<T = any> {
+export interface SearchResult<T = HubSpotObject> {
     total: number;
     results: T[];
     paging?: {
@@ -24,6 +25,31 @@ export interface SearchResult<T = any> {
             link?: string;
         };
     };
+}
+
+export interface Filter {
+    propertyName: string;
+    operator: string;
+    value?: string;
+    highValue?: string; // For range checks
+    values?: string[]; // For IN operator
+}
+
+export interface FilterGroup {
+    filters: Filter[];
+}
+
+export interface Sort {
+    propertyName: string;
+    direction: "ASCENDING" | "DESCENDING";
+}
+
+export interface HubSpotSearchRequest {
+    filterGroups: FilterGroup[];
+    sorts: Sort[];
+    properties: string[];
+    limit: number;
+    after?: string;
 }
 
 export interface User {
@@ -58,10 +84,8 @@ export interface AccountDetails {
 }
 
 export interface ApiUsage {
-    // Define properties based on actual API response, usually has daily limits and current usage
     daily?: {
         usage: number;
         limit: number;
     };
-    // Add other fields as discovered
 }

@@ -27,7 +27,7 @@ export default function LoginPage() {
           <div className="flex flex-col justify-center space-y-8">
             <div className="space-y-4">
               <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-                Unlock the full potential of HubSpot data.
+                HubSpot Toolkit dashboard application.
               </h1>
               <p className="text-lg text-gray-600 md:text-xl">
                 Search, analyze, and manage your contacts and deals with a crystal clear interface. Securely connect with your Private Access Token.

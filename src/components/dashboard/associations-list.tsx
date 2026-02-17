@@ -55,6 +55,9 @@ export function AssociationsList({ associations, currentType }: AssociationsList
                                             item.dealname ||
                                             item.subject ||
                                             item.hs_title ||
+                                            item.hs_meeting_title ||
+                                            item.hs_task_subject ||
+                                            item.hs_body_preview ||
                                             (item.firstname ? `${item.firstname} ${item.lastname || ''}` : null) ||
                                             item.email ||
                                             `ID: ${item.id}`;

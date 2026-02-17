@@ -1,0 +1,75 @@
+
+> hspro@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+
+-----
+FATAL: An unexpected Turbopack error occurred. A panic log has been written to C:\Users\SWM\AppData\Local\Temp\next-panic-17dd0e8026d62878584640b6e2278e5b.log.
+
+To help make Turbopack better, report this error by clicking here.
+-----
+
+
+> Build error occurred
+Error [TurbopackInternalError]: [project]/src/app/globals.css [app-client] (css)
+
+Caused by:
+- creating new process
+- node process exited before we could connect to it with exit code: 1
+
+Debug info:
+- Execution of get_all_written_entrypoints_with_issues_operation failed
+- Execution of EntrypointsOperation::new failed
+- Execution of all_entrypoints_write_to_disk_operation failed
+- Execution of Project::emit_all_output_assets failed
+- Execution of *emit_assets failed
+- Execution of all_assets_from_entries_operation failed
+- Execution of *all_assets_from_entries failed
+- Execution of output_assets_operation failed
+- Execution of <MiddlewareEndpoint as Endpoint>::output failed
+- Execution of MiddlewareEndpoint::output_assets failed
+- Execution of MiddlewareEndpoint::node_chunk failed
+- Execution of *<NodeJsChunkingContext as ChunkingContext>::entry_chunk_group failed
+- Execution of Project::server_chunking_context failed
+- Execution of *get_server_chunking_context failed
+- Execution of Project::module_ids failed
+- Execution of whole_app_module_graph_operation failed
+- Execution of *ModuleGraph::from_single_graph failed
+- Execution of SingleModuleGraph::new_with_entries failed
+- [project]/src/app/globals.css [app-client] (css)
+- Execution of primary_chunkable_referenced_modules failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- Execution of evaluate_webpack_loader failed
+- creating new process
+- node process exited before we could connect to it with exit code: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1404
+    throw err;
+    ^
+  
+  Error: Cannot find module 'D:\hs-toolkit\.next\build\postcss.js'
+      at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+      at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+      at Function._load (node:internal/modules/cjs/loader:1211:37)
+      at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+      at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+      at node:internal/main/run_main_module:36:49 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v22.16.0
+    at <unknown> (TurbopackInternalError: [project]/src/app/globals.css [app-client] (css)) {
+  type: 'TurbopackInternalError',
+  location: undefined
+}

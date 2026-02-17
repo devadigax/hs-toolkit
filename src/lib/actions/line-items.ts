@@ -1,7 +1,7 @@
 "use server";
 
 import { getHubSpotClient } from "@/lib/hubspot-server";
-import { searchObjects } from "./common";
+import { searchObjects, SearchCapableApi } from "./common";
 import { serialize } from "@/lib/utils";
 import { OBJECT_PROPERTIES } from "./config";
 
@@ -10,14 +10,14 @@ export async function getLineItems(limit: number = 100, after?: string, query?: 
     let response;
 
     if (query) {
-        const filterGroups = [
+        const filterGroups: any[] = [
             { filters: [{ propertyName: "name", operator: "CONTAINS_TOKEN", value: query }] },
             { filters: [{ propertyName: "hs_sku", operator: "CONTAINS_TOKEN", value: query }] },
             { filters: [{ propertyName: "description", operator: "CONTAINS_TOKEN", value: query }] },
         ];
 
         response = await searchObjects(
-            hubspotClient.crm.lineItems.searchApi,
+            hubspotClient.crm.lineItems.searchApi as unknown as SearchCapableApi,
             OBJECT_PROPERTIES["line-items"],
             limit,
             after,
@@ -25,7 +25,7 @@ export async function getLineItems(limit: number = 100, after?: string, query?: 
         );
     } else {
         response = await searchObjects(
-            hubspotClient.crm.lineItems.searchApi,
+            hubspotClient.crm.lineItems.searchApi as unknown as SearchCapableApi,
             OBJECT_PROPERTIES["line-items"],
             limit,
             after,

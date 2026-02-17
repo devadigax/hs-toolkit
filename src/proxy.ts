@@ -44,13 +44,32 @@ export async function proxy(request: NextRequest) {
                 const newExpiresIn = data.expires_in;
                 const newRefreshToken = data.refresh_token;
 
-                console.log("Middleware: Token refreshed successfully.");
-
-                // Create response and set cookies
-                const res = NextResponse.next();
-
                 const expiresAt = now + (newExpiresIn * 1000) - 60000;
 
+                console.log("Middleware: Token refreshed successfully.");
+
+                // 1. Update request cookies so Server Components see the new token immediately
+                request.cookies.set(COOKIE_NAME, newAccessToken);
+                request.cookies.set(EXPIRES_IN_COOKIE, expiresAt.toString());
+                if (newRefreshToken) {
+                    request.cookies.set(REFRESH_TOKEN_COOKIE, newRefreshToken);
+                } else if (refreshToken) {
+                    // Ensure the old refresh token is preserved in the cookies map we validate against
+                    request.cookies.set(REFRESH_TOKEN_COOKIE, refreshToken.value);
+                }
+
+                // 2. Sync cookies to request headers (Critical for SC to see updates)
+                const requestHeaders = new Headers(request.headers);
+                requestHeaders.set("cookie", request.cookies.toString());
+
+                // 3. Pass the updated request headers
+                const res = NextResponse.next({
+                    request: {
+                        headers: requestHeaders,
+                    },
+                });
+
+                // 4. Update response cookies so the client (browser) persists the new token
                 res.cookies.set(COOKIE_NAME, newAccessToken, { secure: process.env.NODE_ENV === "production", httpOnly: true, sameSite: "lax" });
                 res.cookies.set(EXPIRES_IN_COOKIE, expiresAt.toString(), { secure: process.env.NODE_ENV === "production", httpOnly: true, sameSite: "lax" });
                 if (newRefreshToken) {
