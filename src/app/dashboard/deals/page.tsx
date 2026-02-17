@@ -4,6 +4,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
+import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
 
 export default async function DealsPage({
     searchParams,
@@ -39,6 +40,7 @@ export default async function DealsPage({
                 <div className="flex items-center space-x-2">
                     <Search placeholder="Search deals..." />
                     <RefreshObjectButton objectType="deals" />
+                    <DeletedRecordsView objectType="deals" />
                 </div>
                 <Card>
                     <CardHeader>

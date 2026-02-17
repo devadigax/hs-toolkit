@@ -1,7 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wrench } from "lucide-react";
-import { CopyDealEngagementsCard } from "@/components/tools/copy-deal-engagements-card";
-import { UnlinkDealActivitiesCard } from "@/components/tools/unlink-deal-activities-card";
+import { CopyEngagementsCard } from "@/components/tools/copy-engagements-card";
+import { UnlinkEngagementsCard } from "@/components/tools/unlink-engagements-card";
+import { AssociateObjectsCard } from "@/components/tools/associate-objects-card";
+import { SubmitIdeaCard } from "@/components/tools/submit-idea-card";
 
 export default function ToolsPage() {
     return (
@@ -10,8 +12,10 @@ export default function ToolsPage() {
                 <h2 className="text-3xl font-bold tracking-tight">Tools</h2>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <CopyDealEngagementsCard />
-                <UnlinkDealActivitiesCard />
+                <CopyEngagementsCard />
+                <UnlinkEngagementsCard />
+                <AssociateObjectsCard />
+                <SubmitIdeaCard />
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

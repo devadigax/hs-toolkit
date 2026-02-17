@@ -3,6 +3,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
+import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
 
 export default async function TicketsPage({
     searchParams,
@@ -33,6 +34,7 @@ export default async function TicketsPage({
                 <div className="flex items-center justify-between space-y-2">
                     <h2 className="text-3xl font-bold tracking-tight">Tickets</h2>
                     <RefreshObjectButton objectType="tickets" />
+                    <DeletedRecordsView objectType="tickets" />
                 </div>
                 <Card>
                     <CardHeader>

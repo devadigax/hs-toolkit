@@ -67,12 +67,39 @@ export async function getObjectsByType(type: keyof typeof OBJECT_PROPERTIES, lim
     return searchObjects(api, properties, limit, after, filterGroups);
 }
 
+export async function getDeletedObjectsByType(type: keyof typeof OBJECT_PROPERTIES, limit: number, after?: string) {
+    const hubspotClient = await getHubSpotClient();
+    const properties = ["hs_object_id", ...OBJECT_PROPERTIES[type]]; // Ensure ID is present
+
+    let api: BasicCapableApi;
+    switch (type) {
+        case "contacts": api = hubspotClient.crm.contacts.basicApi as unknown as BasicCapableApi; break;
+        case "companies": api = hubspotClient.crm.companies.basicApi as unknown as BasicCapableApi; break;
+        case "deals": api = hubspotClient.crm.deals.basicApi as unknown as BasicCapableApi; break;
+        case "tickets": api = hubspotClient.crm.tickets.basicApi as unknown as BasicCapableApi; break;
+        case "quotes": api = hubspotClient.crm.quotes.basicApi as unknown as BasicCapableApi; break;
+        case "products": api = hubspotClient.crm.products.basicApi as unknown as BasicCapableApi; break;
+        case "line-items": api = hubspotClient.crm.lineItems.basicApi as unknown as BasicCapableApi; break;
+        default: throw new Error("Invalid object type");
+    }
+
+    try {
+        // basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived)
+        const response = await api.getPage(limit, after, properties, undefined, undefined, true);
+        return serialize(response);
+    } catch (error) {
+        console.error(`Error fetching deleted ${type}:`, error);
+        throw error;
+    }
+}
+
 interface BatchCapableApi {
     read(request: any): Promise<{ results: import("@/types/hubspot").HubSpotObject[] }>;
 }
 
 interface BasicCapableApi {
     getById(id: string, properties?: string[], propertiesWithHistory?: string[], associations?: string[]): Promise<{ associations?: Record<string, import("@/types/hubspot").HubSpotAssociation> }>;
+    getPage(limit?: number, after?: string, properties?: string[], propertiesWithHistory?: string[], associations?: string[], archived?: boolean): Promise<{ results: import("@/types/hubspot").HubSpotObject[], paging?: any }>;
 }
 
 const getCachedFirstPage = async (type: keyof typeof OBJECT_PROPERTIES, limit: number) => {

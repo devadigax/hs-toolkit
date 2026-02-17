@@ -16,11 +16,13 @@ interface User {
     firstName?: string;
     lastName?: string;
     superAdmin: boolean;
-    roleId?: string; // or roleIds: string[] depending on API version, user snippet showed roleIds AND roleId
+    roleId?: string;
     roleIds?: string[];
     primaryTeamId?: string;
     secondaryTeamIds?: string[];
     sendWelcomeEmail?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 interface UsersTableProps {
@@ -41,16 +43,22 @@ export function UsersTable({ users }: UsersTableProps) {
             <Table>
                 <TableHeader>
                     <TableRow>
+                        <TableHead className="w-[80px]">ID</TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Role ID</TableHead>
                         <TableHead>Super Admin</TableHead>
                         <TableHead>Teams</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Updated</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {users.map((user) => (
                         <TableRow key={user.id}>
+                            <TableCell className="font-mono text-xs text-muted-foreground">
+                                {user.id}
+                            </TableCell>
                             <TableCell className="font-medium">
                                 {user.firstName} {user.lastName}
                             </TableCell>
@@ -91,6 +99,12 @@ export function UsersTable({ users }: UsersTableProps) {
                                         <span className="text-muted-foreground text-sm">-</span>
                                     )}
                                 </div>
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                                {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-"}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                                {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : "-"}
                             </TableCell>
                         </TableRow>
                     ))}

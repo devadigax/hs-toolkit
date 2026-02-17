@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search } from "@/components/ui/search";
 import { InactiveToggle } from "@/components/dashboard/inactive-toggle";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
+import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
 
 export default async function ProductsPage({
     searchParams,
@@ -45,6 +46,7 @@ export default async function ProductsPage({
                     <div className="flex items-center space-x-2">
                         <InactiveToggle />
                         <RefreshObjectButton objectType="products" />
+                        <DeletedRecordsView objectType="products" />
                     </div>
                 </div>
                 <Card>
