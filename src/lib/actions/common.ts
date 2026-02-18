@@ -380,3 +380,63 @@ export async function getPropertyHistory(type: string, id: string, property: str
     const history = (result as any)?.propertiesWithHistory?.[property] || [];
     return serialize(history);
 }
+
+export async function updateObjectProperty(type: string, id: string, property: string, value: string) {
+    const hubspotClient = await getHubSpotClient();
+
+    let api: BasicCapableApi;
+    switch (type) {
+        case "contacts": api = hubspotClient.crm.contacts.basicApi as unknown as BasicCapableApi; break;
+        case "companies": api = hubspotClient.crm.companies.basicApi as unknown as BasicCapableApi; break;
+        case "deals": api = hubspotClient.crm.deals.basicApi as unknown as BasicCapableApi; break;
+        case "tickets": api = hubspotClient.crm.tickets.basicApi as unknown as BasicCapableApi; break;
+        case "products": api = hubspotClient.crm.products.basicApi as unknown as BasicCapableApi; break;
+        case "quotes": api = hubspotClient.crm.quotes.basicApi as unknown as BasicCapableApi; break;
+        case "line-items": api = hubspotClient.crm.lineItems.basicApi as unknown as BasicCapableApi; break;
+        default: throw new Error("Invalid object type for update");
+    }
+
+    try {
+        // @ts-ignore - updates conform to SimplePublicObjectInput but types might be slightly different per object
+        await api.update(id, { properties: { [property]: value } });
+        updateTag(`${type}-list`);
+        updateTag(`${type}-${id}`);
+        return { success: true };
+    } catch (error: any) {
+        console.error(`Error updating ${type} ${id} property ${property}:`, error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function createObject(type: string, properties: Record<string, string>) {
+    const hubspotClient = await getHubSpotClient();
+
+    let api: BasicCapableApi;
+    switch (type) {
+        case "contacts": api = hubspotClient.crm.contacts.basicApi as unknown as BasicCapableApi; break;
+        case "companies": api = hubspotClient.crm.companies.basicApi as unknown as BasicCapableApi; break;
+        case "deals": api = hubspotClient.crm.deals.basicApi as unknown as BasicCapableApi; break;
+        case "tickets": api = hubspotClient.crm.tickets.basicApi as unknown as BasicCapableApi; break;
+        case "products": api = hubspotClient.crm.products.basicApi as unknown as BasicCapableApi; break;
+        case "quotes": api = hubspotClient.crm.quotes.basicApi as unknown as BasicCapableApi; break;
+        case "line-items": api = hubspotClient.crm.lineItems.basicApi as unknown as BasicCapableApi; break;
+        default: throw new Error("Invalid object type for creation");
+    }
+
+    try {
+        // @ts-ignore - updates conform to SimplePublicObjectInput but types might be slightly different per object
+        const response = await api.create({ properties });
+        updateTag(`${type}-list`);
+        return { success: true, data: serialize(response) };
+    } catch (error: any) {
+        console.error(`Error creating ${type}:`, error);
+        return { success: false, error: error.message };
+    }
+}
+
+interface BasicCapableApi {
+    getById(id: string, properties?: string[], propertiesWithHistory?: string[], associations?: string[]): Promise<{ associations?: Record<string, import("@/types/hubspot").HubSpotAssociation> }>;
+    getPage(limit?: number, after?: string, properties?: string[], propertiesWithHistory?: string[], associations?: string[], archived?: boolean): Promise<{ results: import("@/types/hubspot").HubSpotObject[], paging?: any }>;
+    update(id: string, properties: any): Promise<any>;
+    create(properties: any): Promise<any>;
+}

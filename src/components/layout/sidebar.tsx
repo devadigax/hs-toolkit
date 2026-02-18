@@ -79,18 +79,21 @@ export function Sidebar({ className }: { className?: string }) {
     ];
 
     return (
-        <div className={cn("pb-12 bg-background border-r min-h-screen w-64", className)}>
+        <div className={cn("pb-12 bg-white dark:bg-black border-r border-border min-h-screen w-64", className)}>
             <div className="space-y-4 py-4">
                 <div className="px-3 py-2">
-                    <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+                    <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight text-foreground">
                         HS Toolkit
                     </h2>
                     <div className="space-y-1">
                         {links.map((link) => (
                             <Button
                                 key={link.href}
-                                variant={pathname === link.href ? "secondary" : "ghost"}
-                                className="w-full justify-start"
+                                variant="ghost"
+                                className={cn(
+                                    "w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted",
+                                    pathname === link.href && "bg-muted text-foreground font-medium"
+                                )}
                                 asChild
                             >
                                 <Link href={link.href}>

@@ -4,6 +4,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
+import { CreateRecordDialog } from "@/components/dashboard/create-record-dialog";
 
 export default async function TicketsPage({
     searchParams,
@@ -33,8 +34,11 @@ export default async function TicketsPage({
             <div className="flex-1 space-y-4 p-8 pt-6">
                 <div className="flex items-center justify-between space-y-2">
                     <h2 className="text-3xl font-bold tracking-tight">Tickets</h2>
-                    <RefreshObjectButton objectType="tickets" />
-                    <DeletedRecordsView objectType="tickets" />
+                    <div className="flex items-center space-x-2">
+                        <CreateRecordDialog type="tickets" />
+                        <RefreshObjectButton objectType="tickets" />
+                        <DeletedRecordsView objectType="tickets" />
+                    </div>
                 </div>
                 <Card>
                     <CardHeader>

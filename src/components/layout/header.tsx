@@ -16,6 +16,7 @@ import { Menu } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { logout } from "@/lib/actions";
 import { useRouter } from "next/navigation";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export function Header() {
     const router = useRouter();
@@ -42,6 +43,7 @@ export function Header() {
                     </Sheet>
                 </div>
                 <div className="ml-auto flex items-center space-x-4">
+                    <ModeToggle />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Avatar className="cursor-pointer">

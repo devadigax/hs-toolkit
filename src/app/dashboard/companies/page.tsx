@@ -5,6 +5,7 @@ import { Search } from "@/components/ui/search";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
+import { CreateRecordDialog } from "@/components/dashboard/create-record-dialog";
 
 export default async function CompaniesPage({
     searchParams,
@@ -39,6 +40,7 @@ export default async function CompaniesPage({
                 </div>
                 <div className="flex items-center space-x-2">
                     <Search placeholder="Search companies..." />
+                    <CreateRecordDialog type="companies" />
                     <RefreshObjectButton objectType="companies" />
                     <DeletedRecordsView objectType="companies" />
                 </div>

@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { verifyAndLoginWithToken } from "@/lib/actions/auth";
-import { AlertCircle, KeyRound, Loader2 } from "lucide-react";
+import { AlertCircle, KeyRound, Loader2, Info } from "lucide-react";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 export function PrivateTokenForm() {
     const [isPending, startTransition] = useTransition();
@@ -42,9 +49,45 @@ export function PrivateTokenForm() {
                             placeholder="pat-na1-..."
                             required
                             type="password"
-                            className="pl-10 h-11"
+                            className="pl-10 pr-10 h-11"
                         />
                         <KeyRound className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                        <div className="absolute right-3 top-3">
+                            <TooltipProvider>
+                                <Tooltip delayDuration={300}>
+                                    <TooltipTrigger asChild>
+                                        <Info className="h-5 w-5 text-muted-foreground/70 hover:text-primary transition-colors cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-[400px] p-4">
+                                        <div className="space-y-3">
+                                            <div className="space-y-1">
+                                                <h4 className="text-sm font-semibold">Required Scopes</h4>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Your token needs these permissions to function correctly.
+                                                </p>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {[
+                                                    "oauth", "tickets",
+                                                    "crm.objects.contacts.read", "crm.objects.contacts.write",
+                                                    "crm.objects.companies.read", "crm.objects.companies.write",
+                                                    "crm.objects.deals.read", "crm.objects.deals.write",
+                                                    "crm.objects.products.read", "crm.objects.products.write",
+                                                    "crm.objects.quotes.read", "crm.objects.quotes.write",
+                                                    "crm.objects.line_items.read", "crm.objects.line_items.write",
+                                                    "crm.objects.users.read",
+                                                    "settings.users.read"
+                                                ].map((scope) => (
+                                                    <Badge key={scope} variant="secondary" className="font-mono text-[10px] justify-center truncate">
+                                                        {scope}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
                     </div>
                 </div>
 

@@ -13,7 +13,7 @@ import Link from "next/link";
 // ... imports
 
 // using any to avoid type mismatch with HubSpot SDK return types
-export function ContactsTable({ data }: { data: any[] }) {
+export function ContactsTable({ data = [] }: { data: any[] }) {
     return (
         <div className="rounded-md border">
             <Table>
@@ -52,8 +52,8 @@ export function ContactsTable({ data }: { data: any[] }) {
                                     <TableCell>{contact.properties.phone}</TableCell>
                                     <TableCell>{contact.properties.company}</TableCell>
                                     <TableCell>{contact.properties.country}</TableCell>
-                                    <TableCell>
-                                        {contact.properties.createdate ? new Date(contact.properties.createdate).toLocaleDateString() : ""}
+                                    <TableCell suppressHydrationWarning>
+                                        {contact.properties.createdate ? new Date(contact.properties.createdate).toLocaleDateString("en-US") : ""}
                                     </TableCell>
                                 </TableRow>
                             );

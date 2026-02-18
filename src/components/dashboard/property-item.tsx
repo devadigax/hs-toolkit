@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { EditProperty } from "@/components/dashboard/edit-property";
 import {
     Dialog,
     DialogContent,
@@ -43,8 +44,15 @@ export function PropertyItem({ label, value, type, id, propertyKey }: PropertyIt
     return (
         <div className="flex flex-col space-y-1 border p-3 rounded-md relative group">
             <span className="text-sm font-medium text-muted-foreground">{label}</span>
-            <div className="flex items-center justify-between">
-                <span className="text-sm font-medium break-all">{String(value)}</span>
+            <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                    <EditProperty
+                        type={type}
+                        id={id}
+                        propertyKey={propertyKey}
+                        value={value}
+                    />
+                </div>
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
                         <Button

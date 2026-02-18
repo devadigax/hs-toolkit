@@ -49,7 +49,7 @@ export function DataTable({ data, columns, clickableColumn }: { data: any[]; col
                                             {col.accessorKey === linkColumn ? (
                                                 <Link
                                                     href={`${pathname}/${row.id}`}
-                                                    className="font-medium text-blue-600 hover:underline"
+                                                    className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
                                                 >
                                                     {value || row.id}
                                                 </Link>
