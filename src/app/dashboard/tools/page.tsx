@@ -3,6 +3,8 @@ import { Wrench } from "lucide-react";
 import { CopyEngagementsCard } from "@/components/tools/copy-engagements-card";
 import { UnlinkEngagementsCard } from "@/components/tools/unlink-engagements-card";
 import { AssociateObjectsCard } from "@/components/tools/associate-objects-card";
+import { LinkLineItemCard } from "@/components/tools/link-line-item-card";
+import { UnlinkLineItemCard } from "@/components/tools/unlink-line-item-card";
 import { SubmitIdeaCard } from "@/components/tools/submit-idea-card";
 
 export default function ToolsPage() {
@@ -15,6 +17,8 @@ export default function ToolsPage() {
                 <CopyEngagementsCard />
                 <UnlinkEngagementsCard />
                 <AssociateObjectsCard />
+                <LinkLineItemCard />
+                <UnlinkLineItemCard />
                 <SubmitIdeaCard />
 
                 <Card>

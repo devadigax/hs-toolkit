@@ -5,16 +5,21 @@ import { searchObjects, SearchCapableApi } from "./common";
 import { serialize } from "@/lib/utils";
 import { OBJECT_PROPERTIES } from "./config";
 
-export async function getLineItems(limit: number = 100, after?: string, query?: string) {
+export async function getLineItems(limit: number = 100, after?: string, query?: string, searchField?: string) {
     const hubspotClient = await getHubSpotClient();
     let response;
 
     if (query) {
-        const filterGroups: any[] = [
-            { filters: [{ propertyName: "name", operator: "CONTAINS_TOKEN", value: query }] },
-            { filters: [{ propertyName: "hs_sku", operator: "CONTAINS_TOKEN", value: query }] },
-            { filters: [{ propertyName: "description", operator: "CONTAINS_TOKEN", value: query }] },
-        ];
+        const filterGroups: any[] = [];
+        if (searchField && searchField !== "all") {
+            filterGroups.push({ filters: [{ propertyName: searchField, operator: "CONTAINS_TOKEN", value: query }] });
+        } else {
+            filterGroups.push(
+                { filters: [{ propertyName: "name", operator: "CONTAINS_TOKEN", value: query }] },
+                { filters: [{ propertyName: "hs_sku", operator: "CONTAINS_TOKEN", value: query }] },
+                { filters: [{ propertyName: "description", operator: "CONTAINS_TOKEN", value: query }] }
+            );
+        }
 
         response = await searchObjects(
             hubspotClient.crm.lineItems.searchApi as unknown as SearchCapableApi,

@@ -1,4 +1,4 @@
-import { getProducts } from "@/lib/actions";
+import { getProducts, getAllProperties } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,13 +14,17 @@ export default async function ProductsPage({
         after?: string;
         query?: string;
         showInactive?: string;
+        searchField?: string;
     }>;
 }) {
-    const { after, query, showInactive } = await searchParams;
+    const { after, query, showInactive, searchField } = await searchParams;
     const showInactiveBool = showInactive === 'true';
 
     try {
-        const response = await getProducts(100, after, query, showInactiveBool);
+        const [response, allProperties] = await Promise.all([
+            getProducts(100, after, query, showInactiveBool, searchField),
+            getAllProperties("products")
+        ]);
         const products = response.results.map((product: any) => ({
             ...product,
             createdAt: product.properties.createdate ? new Date(product.properties.createdate).toLocaleDateString() : "-"
@@ -42,7 +46,7 @@ export default async function ProductsPage({
                     <h2 className="text-3xl font-bold tracking-tight">Products</h2>
                 </div>
                 <div className="flex items-center justify-between space-x-4">
-                    <Search placeholder="Search products..." />
+                    <Search placeholder="Search products..." properties={allProperties} />
                     <div className="flex items-center space-x-2">
                         <InactiveToggle />
                         <RefreshObjectButton objectType="products" />

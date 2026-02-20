@@ -1,4 +1,4 @@
-import { getLineItems } from "@/lib/actions";
+import { getLineItems, getAllProperties } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
@@ -12,12 +12,16 @@ export default async function LineItemsPage({
     searchParams: Promise<{
         after?: string;
         query?: string;
+        searchField?: string;
     }>;
 }) {
-    const { after, query } = await searchParams;
+    const { after, query, searchField } = await searchParams;
 
     try {
-        const response = await getLineItems(100, after, query);
+        const [response, allProperties] = await Promise.all([
+            getLineItems(100, after, query, searchField),
+            getAllProperties("line-items")
+        ]);
 
         // Format associations for display
         const lineItems = response.results.map((item: any) => {
@@ -59,7 +63,7 @@ export default async function LineItemsPage({
                     <h2 className="text-3xl font-bold tracking-tight">Line Items</h2>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <Search placeholder="Search line items..." />
+                    <Search placeholder="Search line items..." properties={allProperties} />
                     <RefreshObjectButton objectType="line-items" />
                     <DeletedRecordsView objectType="line-items" />
                 </div>

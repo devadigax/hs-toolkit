@@ -1,0 +1,492 @@
+
+D:\hs-toolkit\scripts\inspect_deleted.ts
+  1:10  warning  'Client' is defined but never used                   @typescript-eslint/no-unused-vars
+  4:7   warning  'getAccessToken' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\hs-toolkit\src\app\api\auth\callback\route.ts
+  54:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx
+  22:41  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-explicit-any
+  25:13  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:25:13
+  23 |
+  24 |         return (
+> 25 |             <div className="flex-1 space-y-4 p-8 pt-6">
+     |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 26 |                 <div className="flex items-center space-x-2 mb-4">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 27 |                     <Button variant="ghost" size="sm" asChild>
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 63 |                 </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 64 |             </div>
+     | ^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  65 |         );
+  66 |     } catch (error: any) {
+  67 |         return (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/error-boundaries
+  26:17  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:26:17
+  24 |         return (
+  25 |             <div className="flex-1 space-y-4 p-8 pt-6">
+> 26 |                 <div className="flex items-center space-x-2 mb-4">
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 27 |                     <Button variant="ghost" size="sm" asChild>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 28 |                         <Link href={`/dashboard/${type}`}>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 29 |                             <ArrowLeft className="mr-2 h-4 w-4" />
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 30 |                             Back to {type}
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 31 |                         </Link>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 32 |                     </Button>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 33 |                 </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  34 |                 <div className="flex items-center justify-between space-y-2">
+  35 |                     <h2 className="text-3xl font-bold tracking-tight capitalize">
+  36 |                         {(() => {  react-hooks/error-boundaries
+  27:21  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:27:21
+  25 |             <div className="flex-1 space-y-4 p-8 pt-6">
+  26 |                 <div className="flex items-center space-x-2 mb-4">
+> 27 |                     <Button variant="ghost" size="sm" asChild>
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 28 |                         <Link href={`/dashboard/${type}`}>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 29 |                             <ArrowLeft className="mr-2 h-4 w-4" />
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 30 |                             Back to {type}
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 31 |                         </Link>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 32 |                     </Button>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  33 |                 </div>
+  34 |                 <div className="flex items-center justify-between space-y-2">
+  35 |                     <h2 className="text-3xl font-bold tracking-tight capitalize">                                                                                                                                                                                                                            react-hooks/error-boundaries
+  28:25  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:28:25
+  26 |                 <div className="flex items-center space-x-2 mb-4">
+  27 |                     <Button variant="ghost" size="sm" asChild>
+> 28 |                         <Link href={`/dashboard/${type}`}>
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 29 |                             <ArrowLeft className="mr-2 h-4 w-4" />
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 30 |                             Back to {type}
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 31 |                         </Link>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  32 |                     </Button>
+  33 |                 </div>
+  34 |                 <div className="flex items-center justify-between space-y-2">                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/error-boundaries
+  29:29  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:29:29
+  27 |                     <Button variant="ghost" size="sm" asChild>
+  28 |                         <Link href={`/dashboard/${type}`}>
+> 29 |                             <ArrowLeft className="mr-2 h-4 w-4" />
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  30 |                             Back to {type}
+  31 |                         </Link>
+  32 |                     </Button>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/error-boundaries
+  34:17  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:34:17
+  32 |                     </Button>
+  33 |                 </div>
+> 34 |                 <div className="flex items-center justify-between space-y-2">
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 35 |                     <h2 className="text-3xl font-bold tracking-tight capitalize">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 36 |                         {(() => {
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 48 |                     </h2>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 49 |                 </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  50 |                 <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+  51 |                     <Card className="col-span-2">
+  52 |                         <CardHeader>                                                                                                                                                                                                                                                                                                                                                               react-hooks/error-boundaries
+  35:21  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:35:21
+  33 |                 </div>
+  34 |                 <div className="flex items-center justify-between space-y-2">
+> 35 |                     <h2 className="text-3xl font-bold tracking-tight capitalize">
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 36 |                         {(() => {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 37 |                             const singularMap: Record<string, string> = {
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 47 |                         })()} Details
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 48 |                     </h2>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  49 |                 </div>
+  50 |                 <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+  51 |                     <Card className="col-span-2">                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/error-boundaries
+  50:17  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:50:17
+  48 |                     </h2>
+  49 |                 </div>
+> 50 |                 <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 51 |                     <Card className="col-span-2">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 52 |                         <CardHeader>
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 62 |                     </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 63 |                 </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  64 |             </div>
+  65 |         );
+  66 |     } catch (error: any) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/error-boundaries
+  51:21  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:51:21
+  49 |                 </div>
+  50 |                 <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+> 51 |                     <Card className="col-span-2">
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 52 |                         <CardHeader>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 53 |                             <CardTitle>Properties</CardTitle>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 54 |                         </CardHeader>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 55 |                         <CardContent>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 56 |                             <PropertyGrid properties={properties} type={type} id={id} />
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 57 |                         </CardContent>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 58 |                     </Card>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  59 |
+  60 |                     <div className="col-span-1">
+  61 |                         <AssociationsList associations={associations} currentType={type} />                                                                                                                                                                                                         react-hooks/error-boundaries
+  52:25  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:52:25
+  50 |                 <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+  51 |                     <Card className="col-span-2">
+> 52 |                         <CardHeader>
+     |                         ^^^^^^^^^^^^
+> 53 |                             <CardTitle>Properties</CardTitle>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 54 |                         </CardHeader>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  55 |                         <CardContent>
+  56 |                             <PropertyGrid properties={properties} type={type} id={id} />
+  57 |                         </CardContent>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-hooks/error-boundaries
+  53:29  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:53:29
+  51 |                     <Card className="col-span-2">
+  52 |                         <CardHeader>
+> 53 |                             <CardTitle>Properties</CardTitle>
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  54 |                         </CardHeader>
+  55 |                         <CardContent>
+  56 |                             <PropertyGrid properties={properties} type={type} id={id} />                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/error-boundaries
+  55:25  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:55:25
+  53 |                             <CardTitle>Properties</CardTitle>
+  54 |                         </CardHeader>
+> 55 |                         <CardContent>
+     |                         ^^^^^^^^^^^^^
+> 56 |                             <PropertyGrid properties={properties} type={type} id={id} />
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 57 |                         </CardContent>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  58 |                     </Card>
+  59 |
+  60 |                     <div className="col-span-1">                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/error-boundaries
+  56:29  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:56:29
+  54 |                         </CardHeader>
+  55 |                         <CardContent>
+> 56 |                             <PropertyGrid properties={properties} type={type} id={id} />
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  57 |                         </CardContent>
+  58 |                     </Card>
+  59 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-hooks/error-boundaries
+  60:21  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:60:21
+  58 |                     </Card>
+  59 |
+> 60 |                     <div className="col-span-1">
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 61 |                         <AssociationsList associations={associations} currentType={type} />
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 62 |                     </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  63 |                 </div>
+  64 |             </div>
+  65 |         );                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-hooks/error-boundaries
+  61:25  error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+D:\hs-toolkit\src\app\dashboard\[type]\[id]\page.tsx:61:25
+  59 |
+  60 |                     <div className="col-span-1">
+> 61 |                         <AssociationsList associations={associations} currentType={type} />
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  62 |                     </div>
+  63 |                 </div>
+  64 |             </div>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-hooks/error-boundaries
+  66:21  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\app\dashboard\companies\page.tsx
+  26:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\app\dashboard\contacts\page.tsx
+   1:10  warning  'Suspense' is defined but never used      @typescript-eslint/no-unused-vars
+  53:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\app\dashboard\deals\page.tsx
+  26:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\app\dashboard\engagements\[id]\page.tsx
+  37:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  44:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:84  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\app\dashboard\engagements\page.tsx
+   1:10  warning  'Suspense' is defined but never used      @typescript-eslint/no-unused-vars
+  46:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\app\dashboard\line-items\page.tsx
+  27:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  30:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  81:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\app\dashboard\page.tsx
+    4:8   warning  'Link' is defined but never used          @typescript-eslint/no-unused-vars
+    5:10  warning  'Button' is defined but never used        @typescript-eslint/no-unused-vars
+  129:58  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\app\dashboard\products\page.tsx
+  28:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  67:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\app\dashboard\quotes\page.tsx
+  27:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  60:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\app\dashboard\settings\page.tsx
+  1:29  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\hs-toolkit\src\app\dashboard\tickets\page.tsx
+  26:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  61:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\app\dashboard\tools\page.tsx
+  1:29  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\hs-toolkit\src\app\dashboard\users\page.tsx
+  58:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\hs-toolkit\src\components\dashboard\associations-list.tsx
+    9:34  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   13:30  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   26:60  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   80:50  warning  'currentType' is defined but never used   @typescript-eslint/no-unused-vars
+  108:54  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  112:88  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  120:63  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\components\dashboard\contacts-table.tsx
+  16:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\components\dashboard\create-record-dialog.tsx
+  76:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\hs-toolkit\src\components\dashboard\deleted-records-view.tsx
+  17:38  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  22:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\hs-toolkit\src\components\dashboard\deleted-records-view.tsx:22:13
+  20 |     useEffect(() => {
+  21 |         if (open) {
+> 22 |             setError(null);
+     |             ^^^^^^^^ Avoid calling setState() directly within an effect
+  23 |             startTransition(async () => {
+  24 |                 try {
+  25 |                     // Start with high limit to see something, no pagination for V1  react-hooks/set-state-in-effect
+  26:80  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\components\dashboard\edit-property.tsx
+   9:10  warning  'cn' is defined but never used     @typescript-eslint/no-unused-vars
+  49:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\hs-toolkit\src\components\dashboard\engagements-table.tsx
+  24:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\components\dashboard\property-grid.tsx
+   9:32  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  17:67  warning  'key' is defined but never used                                  @typescript-eslint/no-unused-vars
+  38:55  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  38:64  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+D:\hs-toolkit\src\components\dashboard\property-item.tsx
+  25:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  78:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\components\tools\associate-objects-card.tsx
+  60:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\hs-toolkit\src\components\tools\copy-engagements-card.tsx
+  10:25  warning  'Check' is defined but never used                   @typescript-eslint/no-unused-vars
+  14:7   warning  'OBJECT_TYPES' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  24:24  warning  'setObjectType' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  59:18  warning  'error' is defined but never used                   @typescript-eslint/no-unused-vars
+
+D:\hs-toolkit\src\components\tools\link-line-item-card.tsx
+  46:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\hs-toolkit\src\components\tools\unlink-engagements-card.tsx
+  53:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\hs-toolkit\src\components\tools\unlink-line-item-card.tsx
+  46:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\hs-toolkit\src\components\ui\data-table.tsx
+  19:10  warning  'Button' is defined but never used        @typescript-eslint/no-unused-vars
+  21:71  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\hooks\use-toast.ts
+  18:7  warning  'actionTypes' is assigned a value but only used as a type  @typescript-eslint/no-unused-vars
+
+D:\hs-toolkit\src\lib\actions\common.ts
+   12:54   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   34:35   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   60:9    error    'properties' is never reassigned. Use 'const' instead                                                                prefer-const
+   63:85   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  106:19   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  111:219  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  148:48   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  170:11   warning  'basicApi' is assigned a value but never used                                                                        @typescript-eslint/no-unused-vars
+  193:44   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  207:61   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  216:66   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  237:51   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  256:50   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  258:127  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  397:32   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  407:9    error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  412:21   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  424:9    error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  428:21   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  436:219  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  437:36   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  437:50   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  438:24   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  438:38   error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\lib\actions\dashboard.ts
+   3:10  warning  'getHubSpotClient' is defined but never used  @typescript-eslint/no-unused-vars
+  17:38  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\lib\actions\line-items.ts
+  13:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  44:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  52:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  59:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\lib\actions\products.ts
+  10:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\lib\hubspot-server.ts
+  13:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\lib\tools-actions.ts
+   46:29  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   51:34  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   73:33  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   98:38  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  137:30  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  187:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  203:29  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  227:38  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  249:37  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  276:30  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  288:38  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  325:30  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  338:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  387:22  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  399:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  434:69  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  439:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  471:69  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  476:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\lib\utils.ts
+  8:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\hs-toolkit\src\scripts\list-associations.ts
+  2:9   warning  'Client' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  2:20  error    A `require()` style import is forbidden      @typescript-eslint/no-require-imports
+  4:16  warning  'main' is defined but never used             @typescript-eslint/no-unused-vars
+
+Γ£û 138 problems (105 errors, 33 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

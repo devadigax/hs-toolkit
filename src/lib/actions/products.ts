@@ -4,21 +4,27 @@ import { getHubSpotClient } from "@/lib/hubspot-server";
 import { searchObjects, SearchCapableApi } from "./common";
 import { OBJECT_PROPERTIES } from "./config";
 
-export async function getProducts(limit: number = 100, after?: string, query?: string, showInactive: boolean = false) {
+export async function getProducts(limit: number = 100, after?: string, query?: string, showInactive: boolean = false, searchField?: string) {
     const hubspotClient = await getHubSpotClient();
 
     const filterGroups: any[] = [];
     const statusFilter = !showInactive ? { propertyName: "hs_status", operator: "NEQ", value: "inactive" } : null;
 
     if (query) {
-        const searchProperties = ["name", "hs_sku", "description"];
-        searchProperties.forEach(prop => {
-            const filters = [{ propertyName: prop, operator: "CONTAINS_TOKEN", value: query }];
-            if (statusFilter) {
-                filters.push(statusFilter);
-            }
+        if (searchField && searchField !== "all") {
+            const filters = [{ propertyName: searchField, operator: "CONTAINS_TOKEN", value: query }];
+            if (statusFilter) filters.push(statusFilter);
             filterGroups.push({ filters });
-        });
+        } else {
+            const searchProperties = ["name", "hs_sku", "description"];
+            searchProperties.forEach(prop => {
+                const filters = [{ propertyName: prop, operator: "CONTAINS_TOKEN", value: query }];
+                if (statusFilter) {
+                    filters.push(statusFilter);
+                }
+                filterGroups.push({ filters });
+            });
+        }
     } else if (statusFilter) {
         filterGroups.push({ filters: [statusFilter] });
     }

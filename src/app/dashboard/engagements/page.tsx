@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getEngagements } from "@/lib/actions";
+import { getEngagements, getAllProperties } from "@/lib/actions";
 import { EngagementsTable } from "@/components/dashboard/engagements-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
@@ -11,12 +11,16 @@ export default async function EngagementsPage({
     searchParams: Promise<{
         query?: string;
         after?: string;
+        searchField?: string;
     }>;
 }) {
-    const { query = "", after } = await searchParams;
+    const { query = "", after, searchField } = await searchParams;
 
     try {
-        const response = await getEngagements(100, after, query);
+        const [response, allProperties] = await Promise.all([
+            getEngagements(100, after, query, searchField),
+            getAllProperties("engagements")
+        ]);
         const engagements = response.results;
         const nextCursor = response.paging?.next?.after;
 
@@ -26,7 +30,7 @@ export default async function EngagementsPage({
                     <h2 className="text-3xl font-bold tracking-tight">Engagements</h2>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <Search placeholder="Search activity..." />
+                    <Search placeholder="Search activity..." properties={allProperties} />
                 </div>
                 <Card>
                     <CardHeader>

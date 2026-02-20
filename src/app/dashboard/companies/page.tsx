@@ -1,4 +1,4 @@
-import { getCompanies } from "@/lib/actions";
+import { getCompanies, getAllProperties } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
@@ -13,12 +13,16 @@ export default async function CompaniesPage({
     searchParams: Promise<{
         query?: string;
         after?: string;
+        searchField?: string;
     }>;
 }) {
-    const { query = "", after } = await searchParams;
+    const { query = "", after, searchField } = await searchParams;
 
     try {
-        const response = await getCompanies(100, after, query);
+        const [response, allProperties] = await Promise.all([
+            getCompanies(100, after, query, searchField),
+            getAllProperties("companies")
+        ]);
         const companies = response.results.map((company: any) => ({
             ...company,
             createdAt: company.properties.createdate ? new Date(company.properties.createdate).toLocaleDateString() : "-"
@@ -39,7 +43,7 @@ export default async function CompaniesPage({
                     <h2 className="text-3xl font-bold tracking-tight">Companies</h2>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <Search placeholder="Search companies..." />
+                    <Search placeholder="Search companies..." properties={allProperties} />
                     <CreateRecordDialog type="companies" />
                     <RefreshObjectButton objectType="companies" />
                     <DeletedRecordsView objectType="companies" />
@@ -53,7 +57,7 @@ export default async function CompaniesPage({
                         <PaginationControls nextCursor={nextCursor} />
                     </CardContent>
                 </Card>
-            </div>
+            </div >
         );
     } catch (error: any) {
         return <div className="p-8 text-red-500">Error: {error.message}</div>;

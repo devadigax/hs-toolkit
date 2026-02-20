@@ -4,16 +4,20 @@ import { getHubSpotClient } from "@/lib/hubspot-server";
 import { serialize } from "@/lib/utils";
 import { OBJECT_PROPERTIES } from "./config";
 
-export async function getEngagements(limit: number = 20, after?: string, query?: string) {
+export async function getEngagements(limit: number = 20, after?: string, query?: string, searchField?: string) {
     const hubspotClient = await getHubSpotClient();
 
     const filterGroups = [];
     if (query) {
-        filterGroups.push({
-            filters: [
-                { propertyName: "hs_body_preview", operator: "CONTAINS_TOKEN", value: query }
-            ]
-        });
+        if (searchField && searchField !== "all") {
+            filterGroups.push({
+                filters: [{ propertyName: searchField, operator: "CONTAINS_TOKEN", value: query }]
+            });
+        } else {
+            filterGroups.push({
+                filters: [{ propertyName: "hs_body_preview", operator: "CONTAINS_TOKEN", value: query }]
+            });
+        }
     }
 
     const sort = { propertyName: "hs_timestamp", direction: "DESCENDING" };

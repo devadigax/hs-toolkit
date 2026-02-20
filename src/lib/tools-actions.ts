@@ -404,3 +404,77 @@ export async function associateObjects(
         };
     }
 }
+
+export async function linkDealToLineItem(dealId: string, lineItemId: string) {
+    if (!dealId || !lineItemId) {
+        return { success: false, message: "Deal ID and Line Item ID are required." };
+    }
+
+    try {
+        const hubspotClient = await getHubSpotClient();
+
+        const associationRequest = {
+            inputs: [
+                {
+                    from: { id: dealId },
+                    to: { id: lineItemId }
+                }
+            ]
+        };
+
+        const response = await hubspotClient.apiRequest({
+            method: 'POST',
+            path: '/crm/v4/associations/deals/line_items/batch/associate/default',
+            body: associationRequest,
+        });
+
+        if (!response.ok) {
+            const responseText = await response.text();
+            let errorDetails;
+            try { errorDetails = JSON.parse(responseText); } catch { errorDetails = responseText; }
+            throw new Error(typeof errorDetails === 'object' && errorDetails.message ? errorDetails.message : `Failed to link Deal to Line Item (Status: ${response.status})`);
+        }
+
+        return { success: true, message: `Successfully linked Deal ${dealId} to Line Item ${lineItemId}.` };
+    } catch (error: unknown) {
+        console.error("Error linking deal to line item:", error);
+        return { success: false, message: error instanceof Error ? error.message : "An error occurred while linking." };
+    }
+}
+
+export async function unlinkDealFromLineItem(dealId: string, lineItemId: string) {
+    if (!dealId || !lineItemId) {
+        return { success: false, message: "Deal ID and Line Item ID are required." };
+    }
+
+    try {
+        const hubspotClient = await getHubSpotClient();
+
+        const archiveRequest = {
+            inputs: [
+                {
+                    from: { id: dealId },
+                    to: [{ id: lineItemId }]
+                }
+            ]
+        };
+
+        const response = await hubspotClient.apiRequest({
+            method: 'POST',
+            path: '/crm/v4/associations/deals/line_items/batch/archive',
+            body: archiveRequest,
+        });
+
+        if (!response.ok) {
+            const responseText = await response.text();
+            let errorDetails;
+            try { errorDetails = JSON.parse(responseText); } catch { errorDetails = responseText; }
+            throw new Error(typeof errorDetails === 'object' && errorDetails.message ? errorDetails.message : `Failed to unlink Deal from Line Item (Status: ${response.status})`);
+        }
+
+        return { success: true, message: `Successfully unlinked Deal ${dealId} from Line Item ${lineItemId}.` };
+    } catch (error: unknown) {
+        console.error("Error unlinking deal from line item:", error);
+        return { success: false, message: error instanceof Error ? error.message : "An error occurred while unlinking." };
+    }
+}

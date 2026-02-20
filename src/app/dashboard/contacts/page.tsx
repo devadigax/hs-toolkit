@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getContacts } from "@/lib/actions";
+import { getContacts, getAllProperties } from "@/lib/actions";
 import { ContactsTable } from "@/components/dashboard/contacts-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
@@ -14,12 +14,17 @@ export default async function ContactsPage({
     searchParams: Promise<{
         query?: string;
         after?: string;
+        searchField?: string;
     }>;
 }) {
-    const { query = "", after } = await searchParams;
+    const { query = "", after, searchField } = await searchParams;
 
     try {
-        const response = await getContacts(100, after, query);
+        const [response, allProperties] = await Promise.all([
+            getContacts(100, after, query, searchField),
+            getAllProperties("contacts")
+        ]);
+
         const contacts = response.results;
         const nextCursor = response.paging?.next?.after;
 
@@ -29,7 +34,7 @@ export default async function ContactsPage({
                     <h2 className="text-3xl font-bold tracking-tight">Contacts</h2>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <Search placeholder="Search contacts..." />
+                    <Search placeholder="Search contacts..." properties={allProperties} />
                     <CreateRecordDialog type="contacts" />
                     <RefreshObjectButton objectType="contacts" />
                     <DeletedRecordsView objectType="contacts" />

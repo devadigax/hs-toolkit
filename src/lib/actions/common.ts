@@ -30,7 +30,23 @@ export async function searchObjects(
     return serialize(await api.doSearch(searchRequest));
 }
 
-export async function getObjectsByType(type: keyof typeof OBJECT_PROPERTIES, limit: number, after?: string, query?: string, queryProps?: string[]) {
+function getApiForType(client: Client, type: string) {
+    const typeMap: Record<string, any> = {
+        contacts: client.crm.contacts,
+        companies: client.crm.companies,
+        deals: client.crm.deals,
+        tickets: client.crm.tickets,
+        products: client.crm.products,
+        quotes: client.crm.quotes,
+        "line-items": client.crm.lineItems,
+        "line items": client.crm.lineItems,
+        "line_items": client.crm.lineItems,
+    };
+    if (!typeMap[type]) throw new Error(`Invalid object type: ${type}`);
+    return typeMap[type];
+}
+
+export async function getObjectsByType(type: keyof typeof OBJECT_PROPERTIES, limit: number, after?: string, query?: string, queryProps?: string[], searchField?: string) {
     // Use cache if it's the first page (no after cursor) and no search query
     if (!after && !query) {
         try {
@@ -41,27 +57,30 @@ export async function getObjectsByType(type: keyof typeof OBJECT_PROPERTIES, lim
     }
 
     const hubspotClient = await getHubSpotClient();
-    const properties = OBJECT_PROPERTIES[type];
+    let properties: string[] = [...OBJECT_PROPERTIES[type]];
 
-    let api: SearchCapableApi;
-    switch (type) {
-        case "contacts": api = hubspotClient.crm.contacts.searchApi as unknown as SearchCapableApi; break;
-        case "companies": api = hubspotClient.crm.companies.searchApi as unknown as SearchCapableApi; break;
-        case "deals": api = hubspotClient.crm.deals.searchApi as unknown as SearchCapableApi; break;
-        case "tickets": api = hubspotClient.crm.tickets.searchApi as unknown as SearchCapableApi; break;
-        case "quotes": api = hubspotClient.crm.quotes.searchApi as unknown as SearchCapableApi; break;
-        case "products": api = hubspotClient.crm.products.searchApi as unknown as SearchCapableApi; break;
-        case "line-items": api = hubspotClient.crm.lineItems.searchApi as unknown as SearchCapableApi; break;
-        default: throw new Error("Invalid object type");
+    // Ensure the searched field is returned in the properties list
+    if (searchField && searchField !== "all" && !properties.includes(searchField as any)) {
+        properties.push(searchField);
     }
 
+    const api = getApiForType(hubspotClient, type).searchApi as unknown as SearchCapableApi;
+
     const filterGroups: FilterGroup[] = [];
-    if (query && queryProps && queryProps.length > 0) {
-        queryProps.forEach(prop => {
+    if (query) {
+        if (searchField && searchField !== "all") {
+            // Search strictly in the specified field
             filterGroups.push({
-                filters: [{ propertyName: prop, operator: "CONTAINS_TOKEN", value: query }]
+                filters: [{ propertyName: searchField, operator: "CONTAINS_TOKEN", value: query }]
             });
-        });
+        } else if (queryProps && queryProps.length > 0) {
+            // Default cross-field search
+            queryProps.forEach(prop => {
+                filterGroups.push({
+                    filters: [{ propertyName: prop, operator: "CONTAINS_TOKEN", value: query }]
+                });
+            });
+        }
     }
 
     return searchObjects(api, properties, limit, after, filterGroups);
@@ -71,17 +90,7 @@ export async function getDeletedObjectsByType(type: keyof typeof OBJECT_PROPERTI
     const hubspotClient = await getHubSpotClient();
     const properties = ["hs_object_id", ...OBJECT_PROPERTIES[type]]; // Ensure ID is present
 
-    let api: BasicCapableApi;
-    switch (type) {
-        case "contacts": api = hubspotClient.crm.contacts.basicApi as unknown as BasicCapableApi; break;
-        case "companies": api = hubspotClient.crm.companies.basicApi as unknown as BasicCapableApi; break;
-        case "deals": api = hubspotClient.crm.deals.basicApi as unknown as BasicCapableApi; break;
-        case "tickets": api = hubspotClient.crm.tickets.basicApi as unknown as BasicCapableApi; break;
-        case "quotes": api = hubspotClient.crm.quotes.basicApi as unknown as BasicCapableApi; break;
-        case "products": api = hubspotClient.crm.products.basicApi as unknown as BasicCapableApi; break;
-        case "line-items": api = hubspotClient.crm.lineItems.basicApi as unknown as BasicCapableApi; break;
-        default: throw new Error("Invalid object type");
-    }
+    const api = getApiForType(hubspotClient, type).basicApi as unknown as BasicCapableApi;
 
     try {
         // basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived)
@@ -109,17 +118,7 @@ const getCachedFirstPage = async (type: keyof typeof OBJECT_PROPERTIES, limit: n
         const hubspotClient = new Client({ accessToken });
         const properties = OBJECT_PROPERTIES[type];
 
-        let api: SearchCapableApi;
-        switch (type) {
-            case "contacts": api = hubspotClient.crm.contacts.searchApi as unknown as SearchCapableApi; break;
-            case "companies": api = hubspotClient.crm.companies.searchApi as unknown as SearchCapableApi; break;
-            case "deals": api = hubspotClient.crm.deals.searchApi as unknown as SearchCapableApi; break;
-            case "tickets": api = hubspotClient.crm.tickets.searchApi as unknown as SearchCapableApi; break;
-            case "quotes": api = hubspotClient.crm.quotes.searchApi as unknown as SearchCapableApi; break;
-            case "products": api = hubspotClient.crm.products.searchApi as unknown as SearchCapableApi; break;
-            case "line-items": api = hubspotClient.crm.lineItems.searchApi as unknown as SearchCapableApi; break;
-            default: throw new Error("Invalid object type");
-        }
+        const api = getApiForType(hubspotClient, type).searchApi as unknown as SearchCapableApi;
 
         const sorts: Sort[] = [DEFAULT_SORT];
         const searchRequest: HubSpotSearchRequest = {
@@ -137,7 +136,7 @@ export async function refreshObjectList(type: string) {
     updateTag(`${type}-list`);
 }
 
-export async function getAllProperties(type: string) {
+export async function getAllProperties(type: string): Promise<string[]> {
     const accessToken = await getAccessToken();
 
     return unstable_cache(async () => {
@@ -150,7 +149,7 @@ export async function getAllProperties(type: string) {
         } catch (e) {
             console.error("Error fetching properties for " + type, e);
             if (type === "engagements") {
-                return OBJECT_PROPERTIES.engagements;
+                return [...OBJECT_PROPERTIES.engagements] as unknown as string[];
             }
             return [];
         }
@@ -166,39 +165,9 @@ export async function getObject(type: string, id: string) {
         return getEngagementObject(hubspotClient, id);
     }
 
-    let batchApi: BatchCapableApi | undefined;
-    let basicApi: BasicCapableApi | undefined;
-    switch (type) {
-        case "contacts":
-            batchApi = hubspotClient.crm.contacts.batchApi as unknown as BatchCapableApi;
-            basicApi = hubspotClient.crm.contacts.basicApi as unknown as BasicCapableApi;
-            break;
-        case "companies":
-            batchApi = hubspotClient.crm.companies.batchApi as unknown as BatchCapableApi;
-            basicApi = hubspotClient.crm.companies.basicApi as unknown as BasicCapableApi;
-            break;
-        case "deals":
-            batchApi = hubspotClient.crm.deals.batchApi as unknown as BatchCapableApi;
-            basicApi = hubspotClient.crm.deals.basicApi as unknown as BasicCapableApi;
-            break;
-        case "tickets":
-            batchApi = hubspotClient.crm.tickets.batchApi as unknown as BatchCapableApi;
-            basicApi = hubspotClient.crm.tickets.basicApi as unknown as BasicCapableApi;
-            break;
-        case "products":
-            batchApi = hubspotClient.crm.products.batchApi as unknown as BatchCapableApi;
-            basicApi = hubspotClient.crm.products.basicApi as unknown as BasicCapableApi;
-            break;
-        case "quotes":
-            batchApi = hubspotClient.crm.quotes.batchApi as unknown as BatchCapableApi;
-            basicApi = hubspotClient.crm.quotes.basicApi as unknown as BasicCapableApi;
-            break;
-        case "line-items":
-            batchApi = hubspotClient.crm.lineItems.batchApi as unknown as BatchCapableApi;
-            basicApi = hubspotClient.crm.lineItems.basicApi as unknown as BasicCapableApi;
-            break;
-        default: throw new Error("Invalid object type");
-    }
+    const apiClients = getApiForType(hubspotClient, type);
+    const batchApi = apiClients.batchApi as unknown as BatchCapableApi;
+    const basicApi = apiClients.basicApi as unknown as BasicCapableApi;
 
     const properties = await getAllProperties(type);
     const lookupType = type === "line-items" ? "line-items" : type;
@@ -221,20 +190,43 @@ export async function getObject(type: string, id: string) {
     }
 
     if (associationsToFetch.length > 0) {
-        if (!basicApi) {
-            // warn
-        } else {
+        const associations: Record<string, any> = {};
+        for (const assocType of associationsToFetch) {
             try {
-                const assocResponse = await basicApi.getById(id, undefined, undefined, associationsToFetch);
-                const associations = assocResponse.associations;
-                result.associations = associations;
+                const fromTypeStr = lookupType === "line-items" ? "line_items" : lookupType;
+                const toTypeStr = assocType === "line items" || assocType === "line-items" ? "line_items" : assocType;
 
-                if (associations) {
-                    await enrichAssociations(hubspotClient, associations);
+                const v4Response = await hubspotClient.apiRequest({
+                    method: 'POST',
+                    path: `/crm/v4/associations/${fromTypeStr}/${toTypeStr}/batch/read`,
+                    body: {
+                        inputs: [{ id }]
+                    }
+                });
+
+                const v4Data = (await v4Response.json()) as any;
+
+                if (v4Data?.status === "error") {
+                    console.error(`V4 API returned error for ${fromTypeStr} to ${toTypeStr}:`, v4Data.message);
+                    continue;
                 }
-            } catch (error) {
-                console.error(`Error fetching associations for ${type} ${id}:`, error);
+
+                if (v4Data?.results?.[0]?.to) {
+                    associations[assocType] = {
+                        results: v4Data.results[0].to.map((item: any) => ({
+                            id: item.toObjectId,
+                            associationTypes: item.associationTypes
+                        }))
+                    };
+                }
+            } catch (err) {
+                console.error(`Error fetching v4 association for ${lookupType} to ${assocType}:`, err);
             }
+        }
+
+        result.associations = associations;
+        if (Object.keys(associations).length > 0) {
+            await enrichAssociations(hubspotClient, associations);
         }
     }
 
@@ -270,69 +262,104 @@ async function enrichAssociations(hubspotClient: any, associations: Record<strin
         let api: BatchCapableApi | undefined;
         let properties: string[] = [];
 
-        switch (assocType) {
-            case "contacts":
-                api = hubspotClient.crm.contacts.batchApi as unknown as BatchCapableApi;
-                properties = ["firstname", "lastname", "email"];
-                break;
-            case "companies":
-                api = hubspotClient.crm.companies.batchApi as unknown as BatchCapableApi;
-                properties = ["name"];
-                break;
-            case "deals":
-                api = hubspotClient.crm.deals.batchApi as unknown as BatchCapableApi;
-                properties = ["dealname"];
-                break;
-            case "tickets":
-                api = hubspotClient.crm.tickets.batchApi as unknown as BatchCapableApi;
-                properties = ["subject"];
-                break;
-            case "products":
-                api = hubspotClient.crm.products.batchApi as unknown as BatchCapableApi;
-                properties = ["name"];
-                break;
-            case "quotes":
-                api = hubspotClient.crm.quotes.batchApi as unknown as BatchCapableApi;
-                properties = ["hs_title"];
-                break;
-            case "line items":
-            case "line_items":
-            case "line-items":
-                api = hubspotClient.crm.lineItems.batchApi as unknown as BatchCapableApi;
-                properties = ["name", "hs_sku"];
-                break;
-            case "engagements":
-                // Engagements are special, they don't have a standard batchApi exposed on the client in the same way,
-                // or we want to use the unified v3 endpoint.
-                try {
-                    const engagementProperties = ["hs_engagement_type", "hs_task_subject", "hs_meeting_title", "hs_note_body", "hs_body_preview", "hs_timestamp"];
-                    const batchResponse = await hubspotClient.apiRequest({
-                        method: 'POST',
-                        path: '/crm/v3/objects/engagements/batch/read',
-                        body: {
-                            inputs,
-                            properties: engagementProperties
-                        }
-                    });
-                    const data = await batchResponse.json();
+        let targetProps: string[] = [];
 
-                    if (data.results) {
-                        const detailsMap = new Map(data.results.map((r: import("@/types/hubspot").HubSpotObject) => [r.id, r.properties]));
-                        items.forEach((item) => {
-                            const details = detailsMap.get(item.id);
-                            if (details) {
-                                Object.assign(item, details);
+        const defaultTargetPropsMap: Record<string, string[]> = {
+            contacts: ["firstname", "lastname", "email", "createdate", "hs_createdate", "hs_created_by_user_id"],
+            companies: ["name", "createdate", "hs_createdate", "hs_created_by_user_id"],
+            deals: ["dealname", "createdate", "hs_createdate", "hs_created_by_user_id"],
+            tickets: ["subject", "createdate", "hs_createdate", "hs_created_by_user_id"],
+            products: ["name", "createdate", "hs_createdate", "hs_created_by_user_id"],
+            quotes: ["hs_title", "createdate", "hs_createdate", "hs_created_by_user_id"],
+        };
+
+        if (defaultTargetPropsMap[assocType]) {
+            api = getApiForType(hubspotClient, assocType).batchApi as unknown as BatchCapableApi;
+            targetProps = defaultTargetPropsMap[assocType];
+        } else {
+            switch (assocType) {
+                case "line items":
+                case "line_items":
+                case "line-items":
+                    try {
+                        const lineItemProps = ["name", "hs_name", "hs_sku", "createdate", "hs_createdate", "hs_created_by_user_id", "amount", "price", "quantity", "discount", "description"];
+                        const batchResponse = await hubspotClient.apiRequest({
+                            method: 'POST',
+                            path: '/crm/v3/objects/line_items/batch/read',
+                            body: {
+                                inputs,
+                                properties: lineItemProps
                             }
                         });
+                        const data = await batchResponse.json();
+
+                        if (data.results) {
+                            const detailsMap = new Map(data.results.map((r: import("@/types/hubspot").HubSpotObject) => [r.id, r.properties]));
+                            items.forEach((item) => {
+                                const details = detailsMap.get(item.id);
+                                if (details) {
+                                    Object.assign(item, details);
+                                }
+                            });
+                        }
+                    } catch (err) {
+                        console.error(`Error batch fetching details for line items:`, err);
                     }
-                } catch (err) {
-                    console.error(`Error batch fetching details for engagements:`, err);
-                }
-                continue; // Skip the default api.read logic
+                    continue; // Skip the default api.read logic
+                case "engagements":
+                    // Engagements are special, they don't have a standard batchApi exposed on the client in the same way,
+                    // or we want to use the unified v3 endpoint.
+                    try {
+                        const engagementProperties = ["hs_engagement_type", "hs_task_subject", "hs_meeting_title", "hs_note_body", "hs_body_preview", "hs_timestamp", "hs_created_by_user_id", "hs_created_by"];
+                        const batchResponse = await hubspotClient.apiRequest({
+                            method: 'POST',
+                            path: '/crm/v3/objects/engagements/batch/read',
+                            body: {
+                                inputs,
+                                properties: engagementProperties
+                            }
+                        });
+                        const data = await batchResponse.json();
+
+                        if (data.results) {
+                            const detailsMap = new Map(data.results.map((r: import("@/types/hubspot").HubSpotObject) => [r.id, r.properties]));
+                            items.forEach((item) => {
+                                const details = detailsMap.get(item.id);
+                                if (details) {
+                                    Object.assign(item, details);
+                                }
+                            });
+                        }
+                    } catch (err) {
+                        console.error(`Error batch fetching details for engagements:`, err);
+                    }
+                    continue; // Skip the default api.read logic
+            }
         }
 
-        if (api && properties.length > 0) {
+        if (api && targetProps.length > 0) {
             try {
+                const objectTypeMap: Record<string, string> = {
+                    contacts: "contacts",
+                    companies: "companies",
+                    deals: "deals",
+                    tickets: "tickets",
+                    quotes: "quotes",
+                    "line items": "line_items",
+                    "line_items": "line_items",
+                    "line-items": "line_items",
+                    engagements: "engagements"
+                };
+
+                const mappedType = objectTypeMap[assocType] || assocType;
+                const dynamicProps = await getAllProperties(mappedType);
+                properties = targetProps.filter((p: string) => dynamicProps.includes(p));
+
+                if (properties.length === 0) {
+                    console.warn(`No valid properties found for ${assocType} batch read`);
+                    continue;
+                }
+
                 const batchResponse = await api.read({ inputs, properties });
                 const detailsMap = new Map(batchResponse.results.map((r) => [r.id, r.properties]));
 
@@ -356,17 +383,7 @@ export async function getPropertyHistory(type: string, id: string, property: str
         return [];
     }
 
-    let api: BatchCapableApi;
-    switch (type) {
-        case "contacts": api = hubspotClient.crm.contacts.batchApi as unknown as BatchCapableApi; break;
-        case "companies": api = hubspotClient.crm.companies.batchApi as unknown as BatchCapableApi; break;
-        case "deals": api = hubspotClient.crm.deals.batchApi as unknown as BatchCapableApi; break;
-        case "tickets": api = hubspotClient.crm.tickets.batchApi as unknown as BatchCapableApi; break;
-        case "products": api = hubspotClient.crm.products.batchApi as unknown as BatchCapableApi; break;
-        case "quotes": api = hubspotClient.crm.quotes.batchApi as unknown as BatchCapableApi; break;
-        case "line-items": api = hubspotClient.crm.lineItems.batchApi as unknown as BatchCapableApi; break;
-        default: throw new Error("Invalid object type");
-    }
+    const api = getApiForType(hubspotClient, type).batchApi as unknown as BatchCapableApi;
 
     const batchInput = {
         inputs: [{ id }],
@@ -384,17 +401,7 @@ export async function getPropertyHistory(type: string, id: string, property: str
 export async function updateObjectProperty(type: string, id: string, property: string, value: string) {
     const hubspotClient = await getHubSpotClient();
 
-    let api: BasicCapableApi;
-    switch (type) {
-        case "contacts": api = hubspotClient.crm.contacts.basicApi as unknown as BasicCapableApi; break;
-        case "companies": api = hubspotClient.crm.companies.basicApi as unknown as BasicCapableApi; break;
-        case "deals": api = hubspotClient.crm.deals.basicApi as unknown as BasicCapableApi; break;
-        case "tickets": api = hubspotClient.crm.tickets.basicApi as unknown as BasicCapableApi; break;
-        case "products": api = hubspotClient.crm.products.basicApi as unknown as BasicCapableApi; break;
-        case "quotes": api = hubspotClient.crm.quotes.basicApi as unknown as BasicCapableApi; break;
-        case "line-items": api = hubspotClient.crm.lineItems.basicApi as unknown as BasicCapableApi; break;
-        default: throw new Error("Invalid object type for update");
-    }
+    const api = getApiForType(hubspotClient, type).basicApi as unknown as BasicCapableApi;
 
     try {
         // @ts-ignore - updates conform to SimplePublicObjectInput but types might be slightly different per object
@@ -411,17 +418,7 @@ export async function updateObjectProperty(type: string, id: string, property: s
 export async function createObject(type: string, properties: Record<string, string>) {
     const hubspotClient = await getHubSpotClient();
 
-    let api: BasicCapableApi;
-    switch (type) {
-        case "contacts": api = hubspotClient.crm.contacts.basicApi as unknown as BasicCapableApi; break;
-        case "companies": api = hubspotClient.crm.companies.basicApi as unknown as BasicCapableApi; break;
-        case "deals": api = hubspotClient.crm.deals.basicApi as unknown as BasicCapableApi; break;
-        case "tickets": api = hubspotClient.crm.tickets.basicApi as unknown as BasicCapableApi; break;
-        case "products": api = hubspotClient.crm.products.basicApi as unknown as BasicCapableApi; break;
-        case "quotes": api = hubspotClient.crm.quotes.basicApi as unknown as BasicCapableApi; break;
-        case "line-items": api = hubspotClient.crm.lineItems.basicApi as unknown as BasicCapableApi; break;
-        default: throw new Error("Invalid object type for creation");
-    }
+    const api = getApiForType(hubspotClient, type).basicApi as unknown as BasicCapableApi;
 
     try {
         // @ts-ignore - updates conform to SimplePublicObjectInput but types might be slightly different per object

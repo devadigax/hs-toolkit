@@ -1,4 +1,4 @@
-import { getDeals } from "@/lib/actions";
+import { getDeals, getAllProperties } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
@@ -13,12 +13,16 @@ export default async function DealsPage({
     searchParams: Promise<{
         query?: string;
         after?: string;
+        searchField?: string;
     }>;
 }) {
-    const { query = "", after } = await searchParams;
+    const { query = "", after, searchField } = await searchParams;
 
     try {
-        const response = await getDeals(100, after, query);
+        const [response, allProperties] = await Promise.all([
+            getDeals(100, after, query, searchField),
+            getAllProperties("deals")
+        ]);
         const deals = response.results.map((deal: any) => ({
             ...deal,
             createdAt: deal.properties.createdate ? new Date(deal.properties.createdate).toLocaleDateString() : "-"
@@ -39,7 +43,7 @@ export default async function DealsPage({
                     <h2 className="text-3xl font-bold tracking-tight">Deals</h2>
                 </div>
                 <div className="flex items-center space-x-2">
-                    <Search placeholder="Search deals..." />
+                    <Search placeholder="Search deals..." properties={allProperties} />
                     <CreateRecordDialog type="deals" />
                     <RefreshObjectButton objectType="deals" />
                     <DeletedRecordsView objectType="deals" />
