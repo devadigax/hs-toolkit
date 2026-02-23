@@ -25,16 +25,34 @@ export default async function CompaniesPage({
         ]);
         const companies = response.results.map((company: any) => ({
             ...company,
-            createdAt: company.properties.createdate ? new Date(company.properties.createdate).toLocaleDateString() : "-"
+            name: company.properties.name || "",
+            domain: company.properties.domain || "",
+            industry: company.properties.industry || "",
+            phone: company.properties.phone || "",
+            website: company.properties.website || "",
+            city: company.properties.city || "",
+            state: company.properties.state || "",
+            country: company.properties.country || "",
+            lifecyclestage: company.properties.lifecyclestage || "",
+            createdAt: company.properties.createdate ? new Date(company.properties.createdate).toLocaleDateString() : "-",
+            lastModifiedAt: company.properties.lastmodifieddate ? new Date(company.properties.lastmodifieddate).toLocaleDateString() : "-",
+            source: company.properties.hs_object_source || "-"
         }));
         const nextCursor = response.paging?.next?.after;
 
         const columns = [
             { header: "Name", accessorKey: "name" },
             { header: "Domain", accessorKey: "domain" },
-            { header: "City", accessorKey: "city" },
-            { header: "State", accessorKey: "state" },
+            { header: "Phone", accessorKey: "phone", hiddenByDefault: true },
+            { header: "Website", accessorKey: "website", hiddenByDefault: true },
+            { header: "Industry", accessorKey: "industry", hiddenByDefault: true },
+            { header: "City", accessorKey: "city", hiddenByDefault: true },
+            { header: "State", accessorKey: "state", hiddenByDefault: true },
+            { header: "Country", accessorKey: "country", hiddenByDefault: true },
+            { header: "Lifecycle Stage", accessorKey: "lifecyclestage", hiddenByDefault: true },
             { header: "Created At", accessorKey: "createdAt" },
+            { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
+            { header: "Source", accessorKey: "source", hiddenByDefault: true },
         ];
 
         return (

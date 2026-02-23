@@ -25,15 +25,28 @@ export default async function TicketsPage({
         ]);
         const tickets = response.results.map((ticket: any) => ({
             ...ticket,
-            createdAt: ticket.properties.createdate ? new Date(ticket.properties.createdate).toLocaleDateString() : "-"
+            subject: ticket.properties.subject || ticket.id,
+            content: ticket.properties.content || "",
+            hs_pipeline: ticket.properties.hs_pipeline || "",
+            hs_pipeline_stage: ticket.properties.hs_pipeline_stage || "",
+            hs_ticket_priority: ticket.properties.hs_ticket_priority || "",
+            hs_ticket_category: ticket.properties.hs_ticket_category || "",
+            createdAt: ticket.properties.createdate ? new Date(ticket.properties.createdate).toLocaleDateString() : "-",
+            lastModifiedAt: ticket.properties.lastmodifieddate ? new Date(ticket.properties.lastmodifieddate).toLocaleDateString() : "-",
+            source: ticket.properties.hs_object_source || "-"
         }));
         const nextCursor = response.paging?.next?.after;
 
         const columns = [
             { header: "Subject", accessorKey: "subject" },
-            { header: "Content", accessorKey: "content" },
+            { header: "Priority", accessorKey: "hs_ticket_priority", hiddenByDefault: true },
+            { header: "Category", accessorKey: "hs_ticket_category", hiddenByDefault: true },
+            { header: "Content", accessorKey: "content", hiddenByDefault: true },
+            { header: "Pipeline", accessorKey: "hs_pipeline", hiddenByDefault: true },
             { header: "Stage", accessorKey: "hs_pipeline_stage" },
             { header: "Created At", accessorKey: "createdAt" },
+            { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
+            { header: "Source", accessorKey: "source", hiddenByDefault: true },
         ];
 
         return (

@@ -27,17 +27,28 @@ export default async function ProductsPage({
         ]);
         const products = response.results.map((product: any) => ({
             ...product,
-            createdAt: product.properties.createdate ? new Date(product.properties.createdate).toLocaleDateString() : "-"
+            name: product.properties.name || product.id,
+            hs_sku: product.properties.hs_sku || "",
+            description: product.properties.description || "",
+            price: product.properties.price || "",
+            hs_status: product.properties.hs_status || "",
+            hs_folder_id: product.properties.hs_folder_id || "-",
+            createdAt: product.properties.createdate ? new Date(product.properties.createdate).toLocaleDateString() : "-",
+            lastModifiedAt: product.properties.lastmodifieddate ? new Date(product.properties.lastmodifieddate).toLocaleDateString() : "-",
+            source: product.properties.hs_object_source || "-"
         }));
         const nextCursor = response.paging?.next?.after;
 
         const columns = [
             { header: "Name", accessorKey: "name" },
             { header: "SKU", accessorKey: "hs_sku" },
-            { header: "Description", accessorKey: "description" },
+            { header: "Description", accessorKey: "description", hiddenByDefault: true },
             { header: "Price", accessorKey: "price" },
             { header: "Status", accessorKey: "hs_status" },
+            { header: "Folder ID", accessorKey: "hs_folder_id", hiddenByDefault: true },
             { header: "Created At", accessorKey: "createdAt" },
+            { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
+            { header: "Source", accessorKey: "source", hiddenByDefault: true },
         ];
 
         return (

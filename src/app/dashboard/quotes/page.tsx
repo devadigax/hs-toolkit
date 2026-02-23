@@ -26,14 +26,24 @@ export default async function QuotesPage({
         // Assuming results exists
         const quotes = response.results.map((quote: any) => ({
             ...quote,
-            createdAt: quote.properties.createdate ? new Date(quote.properties.createdate).toLocaleDateString() : "-"
+            hs_title: quote.properties.hs_title || quote.id,
+            hs_expiration_date: quote.properties.hs_expiration_date ? new Date(quote.properties.hs_expiration_date).toLocaleDateString() : "-",
+            hs_status: quote.properties.hs_status || "",
+            hs_quote_amount: quote.properties.hs_quote_amount || "",
+            createdAt: quote.properties.createdate ? new Date(quote.properties.createdate).toLocaleDateString() : "-",
+            lastModifiedAt: quote.properties.lastmodifieddate ? new Date(quote.properties.lastmodifieddate).toLocaleDateString() : "-",
+            source: quote.properties.hs_object_source || "-"
         }));
         const nextCursor = response.paging?.next?.after;
 
         const columns = [
             { header: "Title", accessorKey: "hs_title" },
-            { header: "Expiration Date", accessorKey: "hs_expiration_date" },
+            { header: "Amount", accessorKey: "hs_quote_amount" },
+            { header: "Status", accessorKey: "hs_status" },
+            { header: "Expiration Date", accessorKey: "hs_expiration_date", hiddenByDefault: true },
             { header: "Created At", accessorKey: "createdAt" },
+            { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
+            { header: "Source", accessorKey: "source", hiddenByDefault: true },
         ];
 
         return (

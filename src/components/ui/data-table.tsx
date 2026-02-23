@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
     Table,
     TableBody,
@@ -8,62 +9,114 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Column {
     header: string;
     accessorKey: string;
+    hiddenByDefault?: boolean;
+    cell?: (row: any) => React.ReactNode;
 }
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 
 export function DataTable({ data, columns, clickableColumn }: { data: any[]; columns: Column[]; clickableColumn?: string }) {
     const pathname = usePathname();
     const linkColumn = clickableColumn || columns[0]?.accessorKey;
 
+    // Initialize visible columns based on hiddenByDefault
+    const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(() => {
+        const initialVisibility: Record<string, boolean> = {};
+        columns.forEach(col => {
+            initialVisibility[col.accessorKey] = !col.hiddenByDefault;
+        });
+        return initialVisibility;
+    });
+
+    const activeColumns = columns.filter(col => visibleColumns[col.accessorKey]);
+
     return (
-        <div className="rounded-md border">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        {columns.map((col) => (
-                            <TableHead key={col.accessorKey}>{col.header}</TableHead>
-                        ))}
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {data.length === 0 ? (
+        <div className="space-y-4">
+            <div className="flex items-center justify-end">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="ml-auto">
+                            Columns <ChevronDown className="ml-2 h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        {columns.map((column) => {
+                            return (
+                                <DropdownMenuCheckboxItem
+                                    key={column.accessorKey}
+                                    className="capitalize"
+                                    checked={visibleColumns[column.accessorKey]}
+                                    onCheckedChange={(value) =>
+                                        setVisibleColumns((prev) => ({
+                                            ...prev,
+                                            [column.accessorKey]: !!value,
+                                        }))
+                                    }
+                                >
+                                    {column.header}
+                                </DropdownMenuCheckboxItem>
+                            )
+                        })}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+            <div className="rounded-md border">
+                <Table>
+                    <TableHeader>
                         <TableRow>
-                            <TableCell colSpan={columns.length} className="h-24 text-center">
-                                No results.
-                            </TableCell>
+                            {activeColumns.map((col) => (
+                                <TableHead key={col.accessorKey}>{col.header}</TableHead>
+                            ))}
                         </TableRow>
-                    ) : (
-                        data.map((row, i) => (
-                            <TableRow key={row.id || i}>
-                                {columns.map((col) => {
-                                    const value = row.properties?.[col.accessorKey] || row[col.accessorKey];
-                                    return (
-                                        <TableCell key={col.accessorKey}>
-                                            {col.accessorKey === linkColumn ? (
-                                                <Link
-                                                    href={`${pathname}/${row.id}`}
-                                                    className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
-                                                >
-                                                    {value || row.id}
-                                                </Link>
-                                            ) : (
-                                                value
-                                            )}
-                                        </TableCell>
-                                    );
-                                })}
+                    </TableHeader>
+                    <TableBody>
+                        {data.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={activeColumns.length} className="h-24 text-center">
+                                    No results.
+                                </TableCell>
                             </TableRow>
-                        ))
-                    )}
-                </TableBody>
-            </Table>
+                        ) : (
+                            data.map((row, i) => (
+                                <TableRow key={row.id || i}>
+                                    {activeColumns.map((col) => {
+                                        const value = row.properties?.[col.accessorKey] || row[col.accessorKey];
+                                        return (
+                                            <TableCell key={col.accessorKey}>
+                                                {col.cell ? col.cell(row) : (
+                                                    col.accessorKey === linkColumn ? (
+                                                        <Link
+                                                            href={`${pathname}/${row.id}`}
+                                                            className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                                                        >
+                                                            {value || row.id}
+                                                        </Link>
+                                                    ) : (
+                                                        value
+                                                    )
+                                                )}
+                                            </TableCell>
+                                        );
+                                    })}
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     );
 }

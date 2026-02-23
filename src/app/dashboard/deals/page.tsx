@@ -25,7 +25,15 @@ export default async function DealsPage({
         ]);
         const deals = response.results.map((deal: any) => ({
             ...deal,
-            createdAt: deal.properties.createdate ? new Date(deal.properties.createdate).toLocaleDateString() : "-"
+            dealname: deal.properties.dealname || deal.id,
+            amount: deal.properties.amount || "",
+            dealstage: deal.properties.dealstage || "",
+            pipeline: deal.properties.pipeline || "",
+            dealtype: deal.properties.dealtype || "",
+            closeDate: deal.properties.closedate ? new Date(deal.properties.closedate).toLocaleDateString() : "-",
+            createdAt: deal.properties.createdate ? new Date(deal.properties.createdate).toLocaleDateString() : "-",
+            lastModifiedAt: deal.properties.lastmodifieddate ? new Date(deal.properties.lastmodifieddate).toLocaleDateString() : "-",
+            source: deal.properties.hs_object_source || "-"
         }));
         const nextCursor = response.paging?.next?.after;
 
@@ -33,8 +41,12 @@ export default async function DealsPage({
             { header: "Deal Name", accessorKey: "dealname" },
             { header: "Amount", accessorKey: "amount" },
             { header: "Stage", accessorKey: "dealstage" },
-            { header: "Pipeline", accessorKey: "pipeline" },
+            { header: "Type", accessorKey: "dealtype", hiddenByDefault: true },
+            { header: "Pipeline", accessorKey: "pipeline", hiddenByDefault: true },
+            { header: "Close Date", accessorKey: "closeDate", hiddenByDefault: true },
             { header: "Created At", accessorKey: "createdAt" },
+            { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
+            { header: "Source", accessorKey: "source", hiddenByDefault: true },
         ];
 
         return (

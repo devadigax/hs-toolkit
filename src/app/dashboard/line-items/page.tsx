@@ -40,7 +40,16 @@ export default async function LineItemsPage({
             return {
                 ...item,
                 associationsSummary: associationSummary || "None",
-                createdAt: item.properties.createdate ? new Date(item.properties.createdate).toLocaleDateString() : "-"
+                name: item.properties.name || item.id,
+                hs_sku: item.properties.hs_sku || "",
+                description: item.properties.description || "",
+                price: item.properties.price || "",
+                quantity: item.properties.quantity || "",
+                amount: item.properties.amount || "",
+                discount: item.properties.discount || "",
+                createdAt: item.properties.createdate ? new Date(item.properties.createdate).toLocaleDateString() : "-",
+                lastModifiedAt: item.properties.lastmodifieddate ? new Date(item.properties.lastmodifieddate).toLocaleDateString() : "-",
+                source: item.properties.hs_object_source || "-"
             };
         });
 
@@ -49,12 +58,15 @@ export default async function LineItemsPage({
         const columns = [
             { header: "Name", accessorKey: "name" },
             { header: "SKU", accessorKey: "hs_sku" },
-            { header: "Description", accessorKey: "description" },
+            { header: "Description", accessorKey: "description", hiddenByDefault: true },
             { header: "Price", accessorKey: "price" },
             { header: "Quantity", accessorKey: "quantity" },
             { header: "Amount", accessorKey: "amount" },
-            { header: "Associations", accessorKey: "associationsSummary" },
+            { header: "Discount", accessorKey: "discount", hiddenByDefault: true },
+            { header: "Associations", accessorKey: "associationsSummary", hiddenByDefault: true },
             { header: "Created At", accessorKey: "createdAt" },
+            { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
+            { header: "Source", accessorKey: "source", hiddenByDefault: true },
         ];
 
         return (

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { getContacts, getAllProperties } from "@/lib/actions";
-import { ContactsTable } from "@/components/dashboard/contacts-table";
+import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,8 +25,42 @@ export default async function ContactsPage({
             getAllProperties("contacts")
         ]);
 
-        const contacts = response.results;
+        const contacts = response.results.map((contact: any) => {
+            const firstName = contact.properties.firstname || "";
+            const lastName = contact.properties.lastname || "";
+            return {
+                ...contact,
+                fullName: `${firstName} ${lastName}`.trim() || contact.id,
+                email: contact.properties.email || "",
+                phone: contact.properties.phone || "",
+                company: contact.properties.company || "",
+                country: contact.properties.country || "",
+                jobtitle: contact.properties.jobtitle || "",
+                lifecyclestage: contact.properties.lifecyclestage || "",
+                industry: contact.properties.industry || "",
+                website: contact.properties.website || "",
+                createdAt: contact.properties.createdate ? new Date(contact.properties.createdate).toLocaleDateString("en-US") : "-",
+                lastModifiedAt: contact.properties.lastmodifieddate ? new Date(contact.properties.lastmodifieddate).toLocaleDateString("en-US") : "-",
+                source: contact.properties.hs_object_source || "-"
+            };
+        });
+
         const nextCursor = response.paging?.next?.after;
+
+        const columns = [
+            { header: "Name", accessorKey: "fullName" },
+            { header: "Email", accessorKey: "email" },
+            { header: "Phone", accessorKey: "phone" },
+            { header: "Job Title", accessorKey: "jobtitle", hiddenByDefault: true },
+            { header: "Company", accessorKey: "company" },
+            { header: "Industry", accessorKey: "industry", hiddenByDefault: true },
+            { header: "Website", accessorKey: "website", hiddenByDefault: true },
+            { header: "Country", accessorKey: "country", hiddenByDefault: true },
+            { header: "Lifecycle Stage", accessorKey: "lifecyclestage", hiddenByDefault: true },
+            { header: "Created At", accessorKey: "createdAt" },
+            { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
+            { header: "Source", accessorKey: "source", hiddenByDefault: true },
+        ];
 
         return (
             <div className="flex-1 space-y-4 p-8 pt-6">
@@ -44,7 +78,7 @@ export default async function ContactsPage({
                         <CardTitle>All Contacts</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ContactsTable data={contacts} />
+                        <DataTable data={contacts} columns={columns} clickableColumn="fullName" />
                         <PaginationControls nextCursor={nextCursor} />
                     </CardContent>
                 </Card>
