@@ -70,21 +70,18 @@ export default async function LineItemsPage({
         ];
 
         return (
-            <div className="flex-1 space-y-4 p-8 pt-6">
-                <div className="flex items-center justify-between space-y-2">
+            <div className="flex-1 space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Line Items</h2>
-                </div>
-                <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2">
                     <Search placeholder="Search line items..." properties={allProperties} />
                     <RefreshObjectButton objectType="line-items" />
                     <DeletedRecordsView objectType="line-items" />
                 </div>
+                </div>
                 <Card>
-                    <CardHeader>
-                        <CardTitle>All Line Items</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <DataTable data={lineItems} columns={columns} />
+                    <CardContent className="pt-6">
+                        <DataTable title="All Line Items" data={lineItems} columns={columns} />
                         <PaginationControls nextCursor={nextCursor} />
                     </CardContent>
                 </Card>

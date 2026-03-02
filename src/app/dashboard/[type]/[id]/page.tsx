@@ -22,7 +22,7 @@ export default async function ObjectPage({
         const associations = (object as any).associations;
 
         return (
-            <div className="flex-1 space-y-4 p-8 pt-6">
+            <div className="flex-1 space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
                     <Button variant="ghost" size="sm" asChild>
                         <Link href={`/dashboard/${type}`}>

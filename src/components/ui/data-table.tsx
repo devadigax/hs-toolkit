@@ -28,7 +28,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 
-export function DataTable({ data, columns, clickableColumn }: { data: any[]; columns: Column[]; clickableColumn?: string }) {
+export function DataTable({ data, columns, clickableColumn, title }: { data: any[]; columns: Column[]; clickableColumn?: string, title?: string }) {
     const pathname = usePathname();
     const linkColumn = clickableColumn || columns[0]?.accessorKey;
 
@@ -44,8 +44,11 @@ export function DataTable({ data, columns, clickableColumn }: { data: any[]; col
     const activeColumns = columns.filter(col => visibleColumns[col.accessorKey]);
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-end">
+        <div className="space-y-3">
+            <div className="flex items-center justify-between">
+                <div>
+                    {title && <h3 className="text-lg font-semibold">{title}</h3>}
+                </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="ml-auto">

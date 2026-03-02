@@ -1,7 +1,7 @@
 import { getProducts, getAllProperties } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Search } from "@/components/ui/search";
 import { InactiveToggle } from "@/components/dashboard/inactive-toggle";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
@@ -52,24 +52,19 @@ export default async function ProductsPage({
         ];
 
         return (
-            <div className="flex-1 space-y-4 p-8 pt-6">
-                <div className="flex items-center justify-between space-y-2">
+            <div className="flex-1 space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Products</h2>
-                </div>
-                <div className="flex items-center justify-between space-x-4">
-                    <Search placeholder="Search products..." properties={allProperties} />
                     <div className="flex items-center space-x-2">
+                        <Search placeholder="Search products..." properties={allProperties} />
                         <InactiveToggle />
                         <RefreshObjectButton objectType="products" />
                         <DeletedRecordsView objectType="products" />
                     </div>
                 </div>
                 <Card>
-                    <CardHeader>
-                        <CardTitle>All Products</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <DataTable data={products} columns={columns} />
+                    <CardContent className="pt-6">
+                        <DataTable title="All Products" data={products} columns={columns} />
                         <PaginationControls nextCursor={nextCursor} />
                     </CardContent>
                 </Card>

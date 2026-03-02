@@ -21,24 +21,15 @@ export default async function UsersPage({
         const nextAfter = data.paging?.next?.after;
 
         return (
-            <div className="flex-1 space-y-4 p-8 pt-6">
-                <div className="flex items-center justify-between space-y-2">
+            <div className="flex-1 space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Users</h2>
                     <div className="flex items-center space-x-2">
                         <RefreshObjectButton objectType="users" />
-                        {/* Note: 'users' isn't in OBJECT_PROPERTIES keys for revalidation, 
-                             so RefreshObjectButton might need adjustment or we just accept it won't purge cache 
-                             if we didn't add cache tags for users. 
-                             Wait, getUsers is NOT cached with unstable_cache in actions.ts, so it's always fresh-ish 
-                             unless Next.js caches the fetch automatically. 
-                             If we want to force refresh, we might need a server action that revalidates path.
-                             For now, let's omit the refresh button or rely on router.refresh() from it if it supports generic revalidation? 
-                             Actually, let's keep it simple. Users rarely change.
-                         */}
                     </div>
                 </div>
                 <Card>
-                    <CardHeader>
+                    <CardHeader className="pt-6 pb-2">
                         <CardTitle>All Users</CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -57,8 +48,8 @@ export default async function UsersPage({
         );
     } catch (error) {
         return (
-            <div className="flex-1 space-y-4 p-8 pt-6">
-                <div className="flex items-center justify-between space-y-2">
+            <div className="flex-1 space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Users</h2>
                 </div>
                 <Card>

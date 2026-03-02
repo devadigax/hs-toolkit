@@ -10,10 +10,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
-import { Sidebar } from "@/components/layout/sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { logout } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -28,20 +25,8 @@ export function Header() {
 
     return (
         <div className="border-b">
-            <div className="flex h-16 items-center px-4">
-                <div className="md:hidden mr-4">
-                    <Sheet>
-                        <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                                <Menu className="h-6 w-6" />
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="left" className="p-0">
-                            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                            <Sidebar className="w-full border-none" />
-                        </SheetContent>
-                    </Sheet>
-                </div>
+            <div className="flex h-16 items-center px-4 gap-4">
+                <SidebarTrigger className="-ml-1" />
                 <div className="ml-auto flex items-center space-x-4">
                     <ModeToggle />
                     <DropdownMenu>

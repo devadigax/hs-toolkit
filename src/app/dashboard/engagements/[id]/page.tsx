@@ -49,7 +49,7 @@ export default async function EngagementPage({ params }: { params: Promise<{ id:
     }
 
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
+        <div className="flex-1 space-y-4">
             <div className="flex items-center space-x-4 mb-4">
                 <Button variant="ghost" size="icon" asChild>
                     <Link href="/dashboard/engagements">
