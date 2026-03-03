@@ -42,11 +42,43 @@ function getApiForType(client: Client, type: string) {
         "line items": client.crm.lineItems,
         "line_items": client.crm.lineItems,
     };
-    if (!typeMap[type]) throw new Error(`Invalid object type: ${type}`);
-    return typeMap[type];
+    if (typeMap[type]) return typeMap[type];
+
+    // For custom objects, return a wrapper conforming to standard basicApi without objectType as first argument
+    return {
+        basicApi: {
+            getPage: (limit?: number, after?: string, properties?: string[], propertiesWithHistory?: string[], associations?: string[], archived?: boolean) => {
+                return client.crm.objects.basicApi.getPage(type, limit, after, properties, propertiesWithHistory, associations, archived);
+            },
+            getById: (id: string, properties?: string[], propertiesWithHistory?: string[], associations?: string[]) => {
+                return client.crm.objects.basicApi.getById(type, id, properties, propertiesWithHistory, associations);
+            },
+            update: (id: string, properties: any) => {
+                return client.crm.objects.basicApi.update(type, id, properties);
+            },
+            create: (properties: any) => {
+                return client.crm.objects.basicApi.create(type, properties);
+            },
+        },
+        searchApi: {
+            doSearch: (request: any) => {
+                return client.crm.objects.searchApi.doSearch(type, request);
+            }
+        },
+        batchApi: {
+            read: (request: any) => {
+                return client.crm.objects.batchApi.read(type, request);
+            }
+        }
+    };
 }
 
 export async function getObjectsByType(type: keyof typeof OBJECT_PROPERTIES, limit: number, after?: string, query?: string, queryProps?: string[], searchField?: string) {
+    if (type === "events") {
+        const { getMarketingEvents } = await import("./events");
+        return getMarketingEvents(limit, after);
+    }
+
     // Use cache if it's the first page (no after cursor) and no search query
     if (!after && !query) {
         try {
@@ -57,7 +89,11 @@ export async function getObjectsByType(type: keyof typeof OBJECT_PROPERTIES, lim
     }
 
     const hubspotClient = await getHubSpotClient();
-    let properties: string[] = [...OBJECT_PROPERTIES[type]];
+
+    const objProps = OBJECT_PROPERTIES[type as keyof typeof OBJECT_PROPERTIES];
+    let properties: string[] = objProps
+        ? [...objProps]
+        : await getAllProperties(type).then(props => props.slice(0, 50));
 
     // Ensure the searched field is returned in the properties list
     if (searchField && searchField !== "all" && !properties.includes(searchField as any)) {
@@ -87,8 +123,13 @@ export async function getObjectsByType(type: keyof typeof OBJECT_PROPERTIES, lim
 }
 
 export async function getDeletedObjectsByType(type: keyof typeof OBJECT_PROPERTIES, limit: number, after?: string) {
+    if (type === "events") {
+        return serialize({ results: [] });
+    }
+
     const hubspotClient = await getHubSpotClient();
-    const properties = ["hs_object_id", ...OBJECT_PROPERTIES[type]]; // Ensure ID is present
+    const objProps = OBJECT_PROPERTIES[type as keyof typeof OBJECT_PROPERTIES];
+    const properties = ["hs_object_id", ...(objProps || [])]; // Ensure ID is present
 
     const api = getApiForType(hubspotClient, type).basicApi as unknown as BasicCapableApi;
 
@@ -114,9 +155,23 @@ interface BasicCapableApi {
 const getCachedFirstPage = async (type: keyof typeof OBJECT_PROPERTIES, limit: number) => {
     const accessToken = await getAccessToken();
 
-    return unstable_cache(async () => {
-        const hubspotClient = new Client({ accessToken });
-        const properties = OBJECT_PROPERTIES[type];
+    return unstable_cache(async (token: string) => {
+        const hubspotClient = new Client({ accessToken: token });
+        const objProps = OBJECT_PROPERTIES[type as keyof typeof OBJECT_PROPERTIES];
+
+        let properties: string[] = [];
+        if (objProps) {
+            properties = [...objProps];
+        } else {
+            // Need to get properties without accessing cookies inside the cache scope.
+            try {
+                const objectType = type === "line-items" ? "line_items" : (type === "engagements" ? "engagements" : type);
+                const response = await hubspotClient.crm.properties.coreApi.getAll(objectType as any);
+                properties = response.results.map((prop: any) => prop.name).slice(0, 50);
+            } catch (e) {
+                console.error("Error fetching properties inside cache for " + type, e);
+            }
+        }
 
         const api = getApiForType(hubspotClient, type).searchApi as unknown as SearchCapableApi;
 
@@ -129,7 +184,7 @@ const getCachedFirstPage = async (type: keyof typeof OBJECT_PROPERTIES, limit: n
             after: undefined,
         };
         return serialize(await api.doSearch(searchRequest));
-    }, [`${type}-list-first-page-${limit}-${hashString(accessToken)}`], { tags: [`${type}-list`] })();
+    }, [`${type}-list-first-page-${limit}-${hashString(accessToken)}`], { tags: [`${type}-list`] })(accessToken);
 };
 
 export async function refreshObjectList(type: string) {
@@ -137,10 +192,13 @@ export async function refreshObjectList(type: string) {
 }
 
 export async function getAllProperties(type: string): Promise<string[]> {
+    if (type === "events") {
+        return [...OBJECT_PROPERTIES["events"]];
+    }
     const accessToken = await getAccessToken();
 
-    return unstable_cache(async () => {
-        const hubspotClient = new Client({ accessToken });
+    return unstable_cache(async (token: string) => {
+        const hubspotClient = new Client({ accessToken: token });
         const objectType = type === "line-items" ? "line_items" : (type === "engagements" ? "engagements" : type);
 
         try {
@@ -153,11 +211,16 @@ export async function getAllProperties(type: string): Promise<string[]> {
             }
             return [];
         }
-    }, ['all-properties', type, hashString(accessToken)], { tags: ['properties'] })();
+    }, ['all-properties', type, hashString(accessToken)], { tags: ['properties'] })(accessToken);
 } // Note: We might want to scope this too if properties vary by user, but usually schema is account-wide. Safer to scope it anyway.
 
 
 export async function getObject(type: string, id: string) {
+    if (type === "events") {
+        const { getMarketingEventByObjectId } = await import("./events");
+        return getMarketingEventByObjectId(id);
+    }
+
     const hubspotClient = await getHubSpotClient();
 
     // Special handling for engagements
@@ -379,7 +442,7 @@ async function enrichAssociations(hubspotClient: any, associations: Record<strin
 export async function getPropertyHistory(type: string, id: string, property: string) {
     const hubspotClient = await getHubSpotClient();
 
-    if (type === "engagements") {
+    if (type === "engagements" || type === "events") {
         return [];
     }
 
@@ -399,6 +462,11 @@ export async function getPropertyHistory(type: string, id: string, property: str
 }
 
 export async function updateObjectProperty(type: string, id: string, property: string, value: string) {
+    if (type === "events") {
+        const { updateMarketingEventReq } = await import("./events");
+        return updateMarketingEventReq(id, { [property]: value });
+    }
+
     const hubspotClient = await getHubSpotClient();
 
     const api = getApiForType(hubspotClient, type).basicApi as unknown as BasicCapableApi;
@@ -416,6 +484,11 @@ export async function updateObjectProperty(type: string, id: string, property: s
 }
 
 export async function createObject(type: string, properties: Record<string, string>) {
+    if (type === "events") {
+        const { createMarketingEvent } = await import("./events");
+        return createMarketingEvent(properties);
+    }
+
     const hubspotClient = await getHubSpotClient();
 
     const api = getApiForType(hubspotClient, type).basicApi as unknown as BasicCapableApi;

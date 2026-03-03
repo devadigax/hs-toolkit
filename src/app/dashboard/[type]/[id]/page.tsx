@@ -1,6 +1,6 @@
 import { PropertyGrid } from "@/components/dashboard/property-grid";
 import { AssociationsList } from "@/components/dashboard/associations-list";
-import { getObject } from "@/lib/actions";
+import { getObject, getCustomObjectSchemas } from "@/lib/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -17,9 +17,29 @@ export default async function ObjectPage({
     const { type, id } = await params;
 
     try {
-        const object = await getObject(type, id);
+        const [object, schemas] = await Promise.all([
+            getObject(type, id),
+            getCustomObjectSchemas()
+        ]);
         const properties = object.properties;
         const associations = (object as any).associations;
+
+        const schema = schemas.find((s: any) => s.objectTypeId === type || s.fullyQualifiedName === type);
+        let singularLabel = type;
+        if (schema) {
+            singularLabel = schema.labels.singular;
+        } else {
+            const singularMap: Record<string, string> = {
+                contacts: "Contact",
+                companies: "Company",
+                deals: "Deal",
+                tickets: "Ticket",
+                products: "Product",
+                quotes: "Quote",
+                "line-items": "Line Item",
+            };
+            singularLabel = singularMap[type] || type;
+        }
 
         return (
             <div className="flex-1 space-y-4">
@@ -27,24 +47,13 @@ export default async function ObjectPage({
                     <Button variant="ghost" size="sm" asChild>
                         <Link href={`/dashboard/${type}`}>
                             <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to {type}
+                            Back to {schema ? schema.labels.plural : type}
                         </Link>
                     </Button>
                 </div>
                 <div className="flex items-center justify-between space-y-2">
                     <h2 className="text-3xl font-bold tracking-tight capitalize">
-                        {(() => {
-                            const singularMap: Record<string, string> = {
-                                contacts: "Contact",
-                                companies: "Company",
-                                deals: "Deal",
-                                tickets: "Ticket",
-                                products: "Product",
-                                quotes: "Quote",
-                                "line-items": "Line Item",
-                            };
-                            return singularMap[type] || type;
-                        })()} Details
+                        {singularLabel} Details
                     </h2>
                 </div>
                 <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">

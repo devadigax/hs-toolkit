@@ -9,3 +9,5 @@ export * from "./line-items";
 export * from "./engagements";
 export * from "./users";
 export * from "./dashboard";
+export * from "./events";
+export * from "./schemas";

@@ -13,6 +13,7 @@ import {
     Activity,
     Wrench,
     ContactRound,
+    Calendar,
 } from "lucide-react";
 
 import {
@@ -78,17 +79,22 @@ const links = [
         icon: Activity,
     },
     {
+        href: "/dashboard/events",
+        label: "Events",
+        icon: Calendar,
+    },
+    {
         href: "/dashboard/tools",
         label: "Tools",
         icon: Wrench,
     },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ customObjects = [] }: { customObjects?: any[] }) {
     const pathname = usePathname();
 
     return (
-        <Sidebar variant="floating" collapsible="icon">
+        <Sidebar variant="inset" collapsible="icon">
             <SidebarHeader>
                 <div className="flex items-center gap-2 p-2">
                     <span className="font-bold tracking-tight text-lg group-data-[collapsible=icon]:hidden">
@@ -120,6 +126,29 @@ export function AppSidebar() {
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
+
+                {customObjects.length > 0 && (
+                    <SidebarGroup>
+                        <SidebarGroupContent>
+                            <SidebarMenu>
+                                {customObjects.map((obj) => (
+                                    <SidebarMenuItem key={obj.objectTypeId}>
+                                        <SidebarMenuButton
+                                            asChild
+                                            isActive={pathname === `/dashboard/${obj.objectTypeId}`}
+                                            tooltip={obj.labels.plural}
+                                        >
+                                            <Link href={`/dashboard/${obj.objectTypeId}`}>
+                                                <Package className="h-4 w-4" />
+                                                <span>{obj.labels.plural}</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                ))}
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+                )}
             </SidebarContent>
         </Sidebar>
     );

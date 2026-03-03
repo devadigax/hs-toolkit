@@ -20,6 +20,9 @@ import { OBJECT_PROPERTIES } from "@/lib/actions/config";
 // Properties to exclude from creation form
 const EXCLUDED_PROPERTIES = [
     "createdate",
+    "createdAt",
+    "lastmodifieddate",
+    "updatedAt",
     "hs_updated_by_user_id",
     "hs_read_only",
     "hs_all_accessible_team_ids",
@@ -30,19 +33,22 @@ const EXCLUDED_PROPERTIES = [
 ];
 
 interface CreateRecordDialogProps {
-    type: keyof typeof OBJECT_PROPERTIES;
+    type: string;
     triggerLabel?: string;
+    properties?: string[];
+    objectLabel?: string;
     onSuccess?: () => void;
 }
 
-export function CreateRecordDialog({ type, triggerLabel, onSuccess }: CreateRecordDialogProps) {
+export function CreateRecordDialog({ type, triggerLabel, properties: propList, objectLabel, onSuccess }: CreateRecordDialogProps) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<Record<string, string>>({});
     const { toast } = useToast();
 
     // Get properties for this object type, filtering out read-only/system fields
-    const properties = (OBJECT_PROPERTIES[type] || [])
+    const baseProperties = propList || OBJECT_PROPERTIES[type as keyof typeof OBJECT_PROPERTIES] || [];
+    const properties = baseProperties
         .filter(prop => !EXCLUDED_PROPERTIES.includes(prop) && !prop.startsWith("hs_"));
 
     const handleInputChange = (key: string, value: string) => {
@@ -61,7 +67,7 @@ export function CreateRecordDialog({ type, triggerLabel, onSuccess }: CreateReco
             if (result.success) {
                 toast({
                     title: "Record created",
-                    description: `Successfully created new ${type.slice(0, -1)}.`,
+                    description: `Successfully created new ${objectLabel || type}.`,
                 });
                 setOpen(false);
                 setFormData({});
@@ -96,12 +102,12 @@ export function CreateRecordDialog({ type, triggerLabel, onSuccess }: CreateReco
             <DialogTrigger asChild>
                 <Button>
                     <Plus className="mr-2 h-4 w-4" />
-                    {triggerLabel || `Create ${type.charAt(0).toUpperCase() + type.slice(1, -1)}`}
+                    {triggerLabel || `Create ${objectLabel || type}`}
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Create New {type.slice(0, -1)}</DialogTitle>
+                    <DialogTitle>Create New {objectLabel || type}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
                     {properties.map((prop) => (

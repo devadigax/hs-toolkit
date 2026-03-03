@@ -11,8 +11,8 @@ import { hashString } from "@/lib/server-utils";
 export async function getDashboardStats() {
     const accessToken = await getAccessToken();
 
-    return unstable_cache(async () => {
-        const hubspotClient = new Client({ accessToken });
+    return unstable_cache(async (token: string) => {
+        const hubspotClient = new Client({ accessToken: token });
 
         const getCount = async (api: any) => {
             const searchRequest = {
@@ -38,14 +38,14 @@ export async function getDashboardStats() {
                 products: productsCount,
             }
         };
-    }, ['dashboard-stats', hashString(accessToken)], { tags: ['dashboard'] })();
+    }, ['dashboard-stats', hashString(accessToken)], { tags: ['dashboard'] })(accessToken);
 }
 
 export async function getAccountDetails() {
     const accessToken = await getAccessToken();
 
-    return unstable_cache(async () => {
-        const hubspotClient = new Client({ accessToken });
+    return unstable_cache(async (token: string) => {
+        const hubspotClient = new Client({ accessToken: token });
         try {
             const response = await hubspotClient.apiRequest({
                 method: 'GET',
@@ -57,14 +57,14 @@ export async function getAccountDetails() {
             console.error("Error fetching account details:", e);
             return null;
         }
-    }, ['account-details', hashString(accessToken)], { tags: ['dashboard'] })();
+    }, ['account-details', hashString(accessToken)], { tags: ['dashboard'] })(accessToken);
 }
 
 export async function getDailyApiUsage() {
     const accessToken = await getAccessToken();
 
-    return unstable_cache(async () => {
-        const hubspotClient = new Client({ accessToken });
+    return unstable_cache(async (token: string) => {
+        const hubspotClient = new Client({ accessToken: token });
         try {
             const response = await hubspotClient.apiRequest({
                 method: 'GET',
@@ -76,7 +76,7 @@ export async function getDailyApiUsage() {
             console.error("Error fetching daily API usage:", e);
             return null;
         }
-    }, ['daily-api-usage', hashString(accessToken)], { tags: ['dashboard'] })();
+    }, ['daily-api-usage', hashString(accessToken)], { tags: ['dashboard'] })(accessToken);
 }
 
 export async function refreshDashboard() {

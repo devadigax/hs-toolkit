@@ -8,7 +8,8 @@ export const OBJECT_PROPERTIES = {
     quotes: ["hs_title", "hs_expiration_date", "hs_status", "hs_quote_amount", "createdate", "lastmodifieddate", "hs_updated_by_user_id", "hs_object_source"],
     products: ["name", "description", "price", "hs_sku", "hs_status", "hs_folder_id", "createdate", "lastmodifieddate", "hs_updated_by_user_id", "hs_object_source"],
     "line-items": ["name", "description", "price", "quantity", "amount", "hs_sku", "discount", "createdate", "lastmodifieddate", "hs_updated_by_user_id", "hs_object_source"],
-    engagements: ["hs_engagement_type", "hs_timestamp", "hs_body_preview", "hubspot_owner_id", "hs_task_subject", "hs_meeting_title", "hs_note_body", "hs_task_status", "createdate", "lastmodifieddate", "hs_updated_by_user_id", "hs_object_source"]
+    engagements: ["hs_engagement_type", "hs_timestamp", "hs_body_preview", "hubspot_owner_id", "hs_task_subject", "hs_meeting_title", "hs_note_body", "hs_task_status", "createdate", "lastmodifieddate", "hs_updated_by_user_id", "hs_object_source"],
+    "events": ["eventName", "eventDescription", "eventOrganizer", "eventType", "startDateTime", "endDateTime", "externalEventId", "externalAccountId", "createdAt", "updatedAt"]
 } as const;
 
 export const ASSOCIATION_MAP: Record<string, string[]> = {
