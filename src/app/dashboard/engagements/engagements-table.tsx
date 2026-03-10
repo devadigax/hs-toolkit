@@ -30,6 +30,7 @@ const columns = [
             </Badge>
         )
     },
+    { header: "Date", accessorKey: "formattedDate" },
     {
         header: "Subject / Body",
         accessorKey: "subject",
@@ -40,7 +41,6 @@ const columns = [
         )
     },
     { header: "Task Status", accessorKey: "hs_task_status", hiddenByDefault: true },
-    { header: "Date", accessorKey: "formattedDate" },
     { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
     { header: "Source", accessorKey: "source", hiddenByDefault: true }
 ];

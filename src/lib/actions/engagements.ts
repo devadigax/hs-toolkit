@@ -4,20 +4,34 @@ import { getHubSpotClient } from "@/lib/hubspot-server";
 import { serialize } from "@/lib/utils";
 import { OBJECT_PROPERTIES } from "./config";
 
-export async function getEngagements(limit: number = 20, after?: string, query?: string, searchField?: string) {
+export async function getEngagements(limit: number = 20, after?: string, query?: string, searchField?: string, activityType?: string) {
     const hubspotClient = await getHubSpotClient();
 
     const filterGroups = [];
+
+    // Base filters from search query
+    const baseFilters: any[] = [];
     if (query) {
         if (searchField && searchField !== "all") {
-            filterGroups.push({
-                filters: [{ propertyName: searchField, operator: "CONTAINS_TOKEN", value: query }]
-            });
+            baseFilters.push({ propertyName: searchField, operator: "CONTAINS_TOKEN", value: query });
         } else {
-            filterGroups.push({
-                filters: [{ propertyName: "hs_body_preview", operator: "CONTAINS_TOKEN", value: query }]
-            });
+            baseFilters.push({ propertyName: "hs_body_preview", operator: "CONTAINS_TOKEN", value: query });
         }
+    }
+
+    // Add activityType filter
+    if (activityType && activityType !== "all") {
+        const typeFilter = { propertyName: "hs_engagement_type", operator: "EQ", value: activityType };
+        if (baseFilters.length > 0) {
+            // Combine with existing query filter in the same filter group (AND)
+            filterGroups.push({ filters: [...baseFilters, typeFilter] });
+        } else {
+            // Just the type filter
+            filterGroups.push({ filters: [typeFilter] });
+        }
+    } else if (baseFilters.length > 0) {
+        // Just the query filter
+        filterGroups.push({ filters: baseFilters });
     }
 
     const sort = { propertyName: "hs_timestamp", direction: "DESCENDING" };

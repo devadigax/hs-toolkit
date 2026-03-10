@@ -14,7 +14,14 @@ import {
     Wrench,
     ContactRound,
     Calendar,
+    ChevronRight,
 } from "lucide-react";
+
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 import {
     Sidebar,
@@ -25,6 +32,9 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 
 const links = [
@@ -131,20 +141,33 @@ export function AppSidebar({ customObjects = [] }: { customObjects?: any[] }) {
                     <SidebarGroup>
                         <SidebarGroupContent>
                             <SidebarMenu>
-                                {customObjects.map((obj) => (
-                                    <SidebarMenuItem key={obj.objectTypeId}>
-                                        <SidebarMenuButton
-                                            asChild
-                                            isActive={pathname === `/dashboard/${obj.objectTypeId}`}
-                                            tooltip={obj.labels.plural}
-                                        >
-                                            <Link href={`/dashboard/${obj.objectTypeId}`}>
+                                <Collapsible defaultOpen className="group/collapsible">
+                                    <SidebarMenuItem>
+                                        <CollapsibleTrigger asChild>
+                                            <SidebarMenuButton tooltip="Custom Objects">
                                                 <Package className="h-4 w-4" />
-                                                <span>{obj.labels.plural}</span>
-                                            </Link>
-                                        </SidebarMenuButton>
+                                                <span>Custom Objects</span>
+                                                <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                            </SidebarMenuButton>
+                                        </CollapsibleTrigger>
+                                        <CollapsibleContent>
+                                            <SidebarMenuSub>
+                                                {customObjects.map((obj) => (
+                                                    <SidebarMenuSubItem key={obj.objectTypeId}>
+                                                        <SidebarMenuSubButton
+                                                            asChild
+                                                            isActive={pathname === `/dashboard/${obj.objectTypeId}`}
+                                                        >
+                                                            <Link href={`/dashboard/${obj.objectTypeId}`}>
+                                                                <span>{obj.labels.plural}</span>
+                                                            </Link>
+                                                        </SidebarMenuSubButton>
+                                                    </SidebarMenuSubItem>
+                                                ))}
+                                            </SidebarMenuSub>
+                                        </CollapsibleContent>
                                     </SidebarMenuItem>
-                                ))}
+                                </Collapsible>
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>

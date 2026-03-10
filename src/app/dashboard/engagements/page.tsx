@@ -4,6 +4,7 @@ import { Search } from "@/components/ui/search";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { EngagementsTable } from "./engagements-table";
+import { ActivityTypeFilter } from "@/components/dashboard/activity-type-filter";
 
 export default async function EngagementsPage({
     searchParams,
@@ -12,13 +13,14 @@ export default async function EngagementsPage({
         query?: string;
         after?: string;
         searchField?: string;
+        activityType?: string;
     }>;
 }) {
-    const { query = "", after, searchField } = await searchParams;
+    const { query = "", after, searchField, activityType } = await searchParams;
 
     try {
         const [response, allProperties] = await Promise.all([
-            getEngagements(100, after, query, searchField),
+            getEngagements(100, after, query, searchField, activityType),
             getAllProperties("engagements")
         ]);
 
@@ -49,8 +51,9 @@ export default async function EngagementsPage({
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Engagements</h2>
                     <div className="flex items-center space-x-2">
-                    <Search placeholder="Search activity..." properties={allProperties} />
-                </div>
+                        <ActivityTypeFilter />
+                        <Search placeholder="Search activity..." properties={allProperties} />
+                    </div>
                 </div>
                 <Card>
                     <CardHeader>

@@ -9,12 +9,23 @@ export async function getMarketingEvents(limit: number = 100, after?: string) {
     const query = new URLSearchParams({ limit: limit.toString() });
     if (after) query.set("after", after);
 
+    query.set("sort", "-startDateTime");
+
     const response = await client.apiRequest({
         method: 'GET',
         path: `/marketing/v3/marketing-events?${query.toString()}`
     });
 
     const result = (await response.json()) as any;
+
+    if (result.results && Array.isArray(result.results)) {
+        result.results.sort((a: any, b: any) => {
+            const dateA = new Date(a.startDateTime || a.createdAt || 0).getTime();
+            const dateB = new Date(b.startDateTime || b.createdAt || 0).getTime();
+            return dateB - dateA;
+        });
+    }
+
     return serialize(result);
 }
 

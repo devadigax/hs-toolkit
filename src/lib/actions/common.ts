@@ -119,7 +119,9 @@ export async function getObjectsByType(type: keyof typeof OBJECT_PROPERTIES, lim
         }
     }
 
-    return searchObjects(api, properties, limit, after, filterGroups);
+    const sorts: Sort[] = objProps ? [DEFAULT_SORT] : [{ propertyName: "hs_createdate", direction: "DESCENDING" }];
+
+    return searchObjects(api, properties, limit, after, filterGroups, sorts);
 }
 
 export async function getDeletedObjectsByType(type: keyof typeof OBJECT_PROPERTIES, limit: number, after?: string) {
@@ -175,7 +177,7 @@ const getCachedFirstPage = async (type: keyof typeof OBJECT_PROPERTIES, limit: n
 
         const api = getApiForType(hubspotClient, type).searchApi as unknown as SearchCapableApi;
 
-        const sorts: Sort[] = [DEFAULT_SORT];
+        const sorts: Sort[] = objProps ? [DEFAULT_SORT] : [{ propertyName: "hs_createdate", direction: "DESCENDING" }];
         const searchRequest: HubSpotSearchRequest = {
             filterGroups: [],
             sorts,
