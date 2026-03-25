@@ -2,7 +2,8 @@
 
 A HubSpot Toolkit dashboard application built with Next.js, Shadcn/UI, and the HubSpot API.
 
-![HS Toolkit Dashboard](public/dashboard.jpg)
+![HS Toolkit Dashboard Dark](public/dashboard-dark.png)
+![HS Toolkit Dashboard Light](public/dashboard-light.png)
 
 ## Features
 
