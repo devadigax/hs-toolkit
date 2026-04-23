@@ -1,12 +1,13 @@
-import { Suspense } from "react";
 import { getContacts, getAllProperties } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
 import { CreateRecordDialog } from "@/components/dashboard/create-record-dialog";
+import { formatDateForDisplay, getErrorMessage } from "@/lib/utils";
+import type { HubSpotObject } from "@/types/hubspot";
 
 export default async function ContactsPage({
     searchParams,
@@ -25,23 +26,24 @@ export default async function ContactsPage({
             getAllProperties("contacts")
         ]);
 
-        const contacts = response.results.map((contact: any) => {
-            const firstName = contact.properties.firstname || "";
-            const lastName = contact.properties.lastname || "";
+        const contacts = response.results.map((contact) => {
+            const record = contact as HubSpotObject;
+            const firstName = record.properties.firstname || "";
+            const lastName = record.properties.lastname || "";
             return {
-                ...contact,
-                fullName: `${firstName} ${lastName}`.trim() || contact.id,
-                email: contact.properties.email || "",
-                phone: contact.properties.phone || "",
-                company: contact.properties.company || "",
-                country: contact.properties.country || "",
-                jobtitle: contact.properties.jobtitle || "",
-                lifecyclestage: contact.properties.lifecyclestage || "",
-                industry: contact.properties.industry || "",
-                website: contact.properties.website || "",
-                createdAt: contact.properties.createdate ? new Date(contact.properties.createdate).toLocaleDateString("en-US") : "-",
-                lastModifiedAt: contact.properties.lastmodifieddate ? new Date(contact.properties.lastmodifieddate).toLocaleDateString("en-US") : "-",
-                source: contact.properties.hs_object_source || "-"
+                ...record,
+                fullName: `${firstName} ${lastName}`.trim() || record.id,
+                email: record.properties.email || "",
+                phone: record.properties.phone || "",
+                company: record.properties.company || "",
+                country: record.properties.country || "",
+                jobtitle: record.properties.jobtitle || "",
+                lifecyclestage: record.properties.lifecyclestage || "",
+                industry: record.properties.industry || "",
+                website: record.properties.website || "",
+                createdAt: formatDateForDisplay(record.properties.createdate),
+                lastModifiedAt: formatDateForDisplay(record.properties.lastmodifieddate),
+                source: record.properties.hs_object_source || "-"
             };
         });
 
@@ -81,8 +83,9 @@ export default async function ContactsPage({
                 </Card>
             </div>
         );
-    } catch (error: any) {
-        if (error.message.includes("No value for refresh token found")) {
+    } catch (error: unknown) {
+        const message = getErrorMessage(error);
+        if (message.includes("No value for refresh token found")) {
             return (
                 <div className="flex flex-col items-center justify-center p-8 text-center text-red-500">
                     <p>Authentication Failed. please login again.</p>
@@ -94,8 +97,8 @@ export default async function ContactsPage({
         }
 
         return (
-            <div className="p-8 text-red-500">
-                Error loading contacts: {error.message}
+                <div className="p-8 text-red-500">
+                Error loading contacts: {message}
             </div>
         )
     }

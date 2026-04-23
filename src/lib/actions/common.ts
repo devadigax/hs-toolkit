@@ -3,13 +3,54 @@
 import { getHubSpotClient, getAccessToken } from "@/lib/hubspot-server";
 import { unstable_cache, updateTag } from "next/cache";
 import { Client } from "@hubspot/api-client";
-import { serialize } from "@/lib/utils";
+import { getErrorMessage, serialize } from "@/lib/utils";
 import { OBJECT_PROPERTIES, ASSOCIATION_MAP, DEFAULT_SORT } from "./config";
 import { hashString } from "@/lib/server-utils";
-import type { FilterGroup, Sort, HubSpotSearchRequest } from "@/types/hubspot";
+import type { FilterGroup, Sort, HubSpotSearchRequest, HubSpotObject, HubSpotAssociation, HubSpotAssociationCollection, HubSpotAssociationResult } from "@/types/hubspot";
+
+type SearchResponse = {
+    results: HubSpotObject[];
+    total?: number;
+    paging?: {
+        next?: {
+            after: string;
+        };
+    };
+};
+
+type ObjectInput = {
+    properties: Record<string, string>;
+};
+
+type BatchReadInput = {
+    inputs: Array<{ id: string }>;
+    properties?: string[];
+    propertiesWithHistory?: string[];
+};
+
+type V4AssociationReadResponse = {
+    status?: string;
+    message?: string;
+    results?: Array<{
+        to?: Array<{
+            toObjectId: string;
+            associationTypes?: HubSpotAssociationResult["associationTypes"];
+        }>;
+    }>;
+};
+
+type ObjectPropertiesResponse = {
+    results: Array<{ name: string }>;
+};
+
+type ObjectApiGroup = {
+    basicApi: BasicCapableApi;
+    searchApi: SearchCapableApi;
+    batchApi: BatchCapableApi;
+};
 
 export interface SearchCapableApi {
-    doSearch(request: HubSpotSearchRequest): Promise<any>;
+    doSearch(request: HubSpotSearchRequest): Promise<SearchResponse>;
 }
 
 export async function searchObjects(
@@ -31,7 +72,7 @@ export async function searchObjects(
 }
 
 function getApiForType(client: Client, type: string) {
-    const typeMap: Record<string, any> = {
+    const typeMap: Record<string, unknown> = {
         contacts: client.crm.contacts,
         companies: client.crm.companies,
         deals: client.crm.deals,
@@ -53,21 +94,27 @@ function getApiForType(client: Client, type: string) {
             getById: (id: string, properties?: string[], propertiesWithHistory?: string[], associations?: string[]) => {
                 return client.crm.objects.basicApi.getById(type, id, properties, propertiesWithHistory, associations);
             },
-            update: (id: string, properties: any) => {
+            update: (id: string, properties: ObjectInput) => {
                 return client.crm.objects.basicApi.update(type, id, properties);
             },
-            create: (properties: any) => {
+            create: (properties: ObjectInput) => {
                 return client.crm.objects.basicApi.create(type, properties);
             },
         },
         searchApi: {
-            doSearch: (request: any) => {
-                return client.crm.objects.searchApi.doSearch(type, request);
+            doSearch: (request: HubSpotSearchRequest) => {
+                return client.crm.objects.searchApi.doSearch(
+                    type,
+                    request as unknown as Parameters<typeof client.crm.objects.searchApi.doSearch>[1]
+                );
             }
         },
         batchApi: {
-            read: (request: any) => {
-                return client.crm.objects.batchApi.read(type, request);
+            read: (request: BatchReadInput) => {
+                return client.crm.objects.batchApi.read(
+                    type,
+                    request as unknown as Parameters<typeof client.crm.objects.batchApi.read>[1]
+                );
             }
         }
     };
@@ -91,16 +138,16 @@ export async function getObjectsByType(type: keyof typeof OBJECT_PROPERTIES, lim
     const hubspotClient = await getHubSpotClient();
 
     const objProps = OBJECT_PROPERTIES[type as keyof typeof OBJECT_PROPERTIES];
-    let properties: string[] = objProps
+    const properties: string[] = objProps
         ? [...objProps]
         : await getAllProperties(type).then(props => props.slice(0, 50));
 
     // Ensure the searched field is returned in the properties list
-    if (searchField && searchField !== "all" && !properties.includes(searchField as any)) {
+    if (searchField && searchField !== "all" && !properties.includes(searchField)) {
         properties.push(searchField);
     }
 
-    const api = getApiForType(hubspotClient, type).searchApi as unknown as SearchCapableApi;
+    const api = (getApiForType(hubspotClient, type) as ObjectApiGroup).searchApi;
 
     const filterGroups: FilterGroup[] = [];
     if (query) {
@@ -133,7 +180,7 @@ export async function getDeletedObjectsByType(type: keyof typeof OBJECT_PROPERTI
     const objProps = OBJECT_PROPERTIES[type as keyof typeof OBJECT_PROPERTIES];
     const properties = ["hs_object_id", ...(objProps || [])]; // Ensure ID is present
 
-    const api = getApiForType(hubspotClient, type).basicApi as unknown as BasicCapableApi;
+    const api = (getApiForType(hubspotClient, type) as ObjectApiGroup).basicApi;
 
     try {
         // basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived)
@@ -146,12 +193,14 @@ export async function getDeletedObjectsByType(type: keyof typeof OBJECT_PROPERTI
 }
 
 interface BatchCapableApi {
-    read(request: any): Promise<{ results: import("@/types/hubspot").HubSpotObject[] }>;
+    read(request: BatchReadInput): Promise<{ results: HubSpotObject[] }>;
 }
 
 interface BasicCapableApi {
-    getById(id: string, properties?: string[], propertiesWithHistory?: string[], associations?: string[]): Promise<{ associations?: Record<string, import("@/types/hubspot").HubSpotAssociation> }>;
-    getPage(limit?: number, after?: string, properties?: string[], propertiesWithHistory?: string[], associations?: string[], archived?: boolean): Promise<{ results: import("@/types/hubspot").HubSpotObject[], paging?: any }>;
+    getById(id: string, properties?: string[], propertiesWithHistory?: string[], associations?: string[]): Promise<{ associations?: Record<string, HubSpotAssociation> }>;
+    getPage(limit?: number, after?: string, properties?: string[], propertiesWithHistory?: string[], associations?: string[], archived?: boolean): Promise<SearchResponse>;
+    update?(id: string, properties: ObjectInput): Promise<unknown>;
+    create?(properties: ObjectInput): Promise<unknown>;
 }
 
 const getCachedFirstPage = async (type: keyof typeof OBJECT_PROPERTIES, limit: number) => {
@@ -168,14 +217,14 @@ const getCachedFirstPage = async (type: keyof typeof OBJECT_PROPERTIES, limit: n
             // Need to get properties without accessing cookies inside the cache scope.
             try {
                 const objectType = type === "line-items" ? "line_items" : (type === "engagements" ? "engagements" : type);
-                const response = await hubspotClient.crm.properties.coreApi.getAll(objectType as any);
-                properties = response.results.map((prop: any) => prop.name).slice(0, 50);
+                const response = await hubspotClient.crm.properties.coreApi.getAll(objectType);
+                properties = (response as ObjectPropertiesResponse).results.map((prop) => prop.name).slice(0, 50);
             } catch (e) {
                 console.error("Error fetching properties inside cache for " + type, e);
             }
         }
 
-        const api = getApiForType(hubspotClient, type).searchApi as unknown as SearchCapableApi;
+        const api = (getApiForType(hubspotClient, type) as ObjectApiGroup).searchApi;
 
         const sorts: Sort[] = objProps ? [DEFAULT_SORT] : [{ propertyName: "hs_createdate", direction: "DESCENDING" }];
         const searchRequest: HubSpotSearchRequest = {
@@ -205,7 +254,7 @@ export async function getAllProperties(type: string): Promise<string[]> {
 
         try {
             const response = await hubspotClient.crm.properties.coreApi.getAll(objectType);
-            return response.results.map((prop: any) => prop.name);
+            return (response as ObjectPropertiesResponse).results.map((prop) => prop.name);
         } catch (e) {
             console.error("Error fetching properties for " + type, e);
             if (type === "engagements") {
@@ -230,10 +279,8 @@ export async function getObject(type: string, id: string) {
         return getEngagementObject(hubspotClient, id);
     }
 
-    const apiClients = getApiForType(hubspotClient, type);
-    const batchApi = apiClients.batchApi as unknown as BatchCapableApi;
-    const basicApi = apiClients.basicApi as unknown as BasicCapableApi;
-
+    const apiClients = getApiForType(hubspotClient, type) as ObjectApiGroup;
+    const batchApi = apiClients.batchApi;
     const properties = await getAllProperties(type);
     const lookupType = type === "line-items" ? "line-items" : type;
     const associationsToFetch = ASSOCIATION_MAP[lookupType] || [];
@@ -255,7 +302,7 @@ export async function getObject(type: string, id: string) {
     }
 
     if (associationsToFetch.length > 0) {
-        const associations: Record<string, any> = {};
+        const associations: Record<string, HubSpotAssociationCollection> = {};
         for (const assocType of associationsToFetch) {
             try {
                 const fromTypeStr = lookupType === "line-items" ? "line_items" : lookupType;
@@ -269,7 +316,7 @@ export async function getObject(type: string, id: string) {
                     }
                 });
 
-                const v4Data = (await v4Response.json()) as any;
+                const v4Data = (await v4Response.json()) as V4AssociationReadResponse;
 
                 if (v4Data?.status === "error") {
                     console.error(`V4 API returned error for ${fromTypeStr} to ${toTypeStr}:`, v4Data.message);
@@ -278,7 +325,7 @@ export async function getObject(type: string, id: string) {
 
                 if (v4Data?.results?.[0]?.to) {
                     associations[assocType] = {
-                        results: v4Data.results[0].to.map((item: any) => ({
+                        results: v4Data.results[0].to.map((item) => ({
                             id: item.toObjectId,
                             associationTypes: item.associationTypes
                         }))
@@ -299,14 +346,14 @@ export async function getObject(type: string, id: string) {
 }
 
 // Helper functions for getObject
-async function getEngagementObject(hubspotClient: any, id: string) {
+async function getEngagementObject(hubspotClient: Client, id: string) {
     try {
         const properties = await getAllProperties("engagements");
         const response = await hubspotClient.apiRequest({
             method: 'GET',
             path: `/crm/v3/objects/engagements/${id}?properties=${properties.join(',')}&associations=contacts,companies,deals,tickets`,
         });
-        const result = await response.json();
+        const result = await response.json() as { status?: string };
 
         if (!result || result.status === 'error') {
             throw new Error("Object not found");
@@ -318,9 +365,9 @@ async function getEngagementObject(hubspotClient: any, id: string) {
     }
 }
 
-async function enrichAssociations(hubspotClient: any, associations: Record<string, import("@/types/hubspot").HubSpotAssociation>) {
+async function enrichAssociations(hubspotClient: Client, associations: Record<string, HubSpotAssociation>) {
     for (const assocType of Object.keys(associations)) {
-        const items = associations[assocType].results as (import("@/types/hubspot").HubSpotAssociationResult & Record<string, any>)[];
+        const items = associations[assocType].results as Array<HubSpotAssociationResult & Record<string, string | number | boolean | null | undefined>>;
         if (!items || items.length === 0) continue;
 
         const inputs = items.map((item) => ({ id: item.id }));
@@ -339,7 +386,7 @@ async function enrichAssociations(hubspotClient: any, associations: Record<strin
         };
 
         if (defaultTargetPropsMap[assocType]) {
-            api = getApiForType(hubspotClient, assocType).batchApi as unknown as BatchCapableApi;
+            api = (getApiForType(hubspotClient, assocType) as ObjectApiGroup).batchApi;
             targetProps = defaultTargetPropsMap[assocType];
         } else {
             switch (assocType) {
@@ -356,10 +403,10 @@ async function enrichAssociations(hubspotClient: any, associations: Record<strin
                                 properties: lineItemProps
                             }
                         });
-                        const data = await batchResponse.json();
+                        const data = await batchResponse.json() as { results?: HubSpotObject[] };
 
                         if (data.results) {
-                            const detailsMap = new Map(data.results.map((r: import("@/types/hubspot").HubSpotObject) => [r.id, r.properties]));
+                            const detailsMap = new Map(data.results.map((r) => [r.id, r.properties]));
                             items.forEach((item) => {
                                 const details = detailsMap.get(item.id);
                                 if (details) {
@@ -384,10 +431,10 @@ async function enrichAssociations(hubspotClient: any, associations: Record<strin
                                 properties: engagementProperties
                             }
                         });
-                        const data = await batchResponse.json();
+                        const data = await batchResponse.json() as { results?: HubSpotObject[] };
 
                         if (data.results) {
-                            const detailsMap = new Map(data.results.map((r: import("@/types/hubspot").HubSpotObject) => [r.id, r.properties]));
+                            const detailsMap = new Map(data.results.map((r) => [r.id, r.properties]));
                             items.forEach((item) => {
                                 const details = detailsMap.get(item.id);
                                 if (details) {
@@ -448,7 +495,7 @@ export async function getPropertyHistory(type: string, id: string, property: str
         return [];
     }
 
-    const api = getApiForType(hubspotClient, type).batchApi as unknown as BatchCapableApi;
+    const api = (getApiForType(hubspotClient, type) as ObjectApiGroup).batchApi;
 
     const batchInput = {
         inputs: [{ id }],
@@ -459,7 +506,7 @@ export async function getPropertyHistory(type: string, id: string, property: str
     const result = response.results[0];
 
     // Access propertiesWithHistory safely by casting
-    const history = (result as any)?.propertiesWithHistory?.[property] || [];
+    const history = ((result as HubSpotObject & { propertiesWithHistory?: Record<string, unknown[]> })?.propertiesWithHistory?.[property]) || [];
     return serialize(history);
 }
 
@@ -471,17 +518,19 @@ export async function updateObjectProperty(type: string, id: string, property: s
 
     const hubspotClient = await getHubSpotClient();
 
-    const api = getApiForType(hubspotClient, type).basicApi as unknown as BasicCapableApi;
+    const api = (getApiForType(hubspotClient, type) as ObjectApiGroup).basicApi;
 
     try {
-        // @ts-ignore - updates conform to SimplePublicObjectInput but types might be slightly different per object
+        if (!api.update) {
+            throw new Error(`Update API not available for type ${type}`);
+        }
         await api.update(id, { properties: { [property]: value } });
         updateTag(`${type}-list`);
         updateTag(`${type}-${id}`);
         return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(`Error updating ${type} ${id} property ${property}:`, error);
-        return { success: false, error: error.message };
+        return { success: false, error: getErrorMessage(error) };
     }
 }
 
@@ -493,22 +542,17 @@ export async function createObject(type: string, properties: Record<string, stri
 
     const hubspotClient = await getHubSpotClient();
 
-    const api = getApiForType(hubspotClient, type).basicApi as unknown as BasicCapableApi;
+    const api = (getApiForType(hubspotClient, type) as ObjectApiGroup).basicApi;
 
     try {
-        // @ts-ignore - updates conform to SimplePublicObjectInput but types might be slightly different per object
+        if (!api.create) {
+            throw new Error(`Create API not available for type ${type}`);
+        }
         const response = await api.create({ properties });
         updateTag(`${type}-list`);
         return { success: true, data: serialize(response) };
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(`Error creating ${type}:`, error);
-        return { success: false, error: error.message };
+        return { success: false, error: getErrorMessage(error) };
     }
-}
-
-interface BasicCapableApi {
-    getById(id: string, properties?: string[], propertiesWithHistory?: string[], associations?: string[]): Promise<{ associations?: Record<string, import("@/types/hubspot").HubSpotAssociation> }>;
-    getPage(limit?: number, after?: string, properties?: string[], propertiesWithHistory?: string[], associations?: string[], archived?: boolean): Promise<{ results: import("@/types/hubspot").HubSpotObject[], paging?: any }>;
-    update(id: string, properties: any): Promise<any>;
-    create(properties: any): Promise<any>;
 }

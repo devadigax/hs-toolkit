@@ -36,6 +36,7 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import type { CustomObjectSchema } from "@/types/hubspot";
 
 const links = [
     {
@@ -100,7 +101,7 @@ const links = [
     },
 ];
 
-export function AppSidebar({ customObjects = [] }: { customObjects?: any[] }) {
+export function AppSidebar({ customObjects = [] }: { customObjects?: CustomObjectSchema[] }) {
     const pathname = usePathname();
 
     return (

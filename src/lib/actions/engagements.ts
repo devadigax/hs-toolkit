@@ -3,14 +3,15 @@
 import { getHubSpotClient } from "@/lib/hubspot-server";
 import { serialize } from "@/lib/utils";
 import { OBJECT_PROPERTIES } from "./config";
+import type { Filter, FilterGroup, Sort } from "@/types/hubspot";
 
 export async function getEngagements(limit: number = 20, after?: string, query?: string, searchField?: string, activityType?: string) {
     const hubspotClient = await getHubSpotClient();
 
-    const filterGroups = [];
+    const filterGroups: FilterGroup[] = [];
 
     // Base filters from search query
-    const baseFilters: any[] = [];
+    const baseFilters: Filter[] = [];
     if (query) {
         if (searchField && searchField !== "all") {
             baseFilters.push({ propertyName: searchField, operator: "CONTAINS_TOKEN", value: query });
@@ -34,7 +35,7 @@ export async function getEngagements(limit: number = 20, after?: string, query?:
         filterGroups.push({ filters: baseFilters });
     }
 
-    const sort = { propertyName: "hs_timestamp", direction: "DESCENDING" };
+    const sort: Sort = { propertyName: "hs_timestamp", direction: "DESCENDING" };
 
     const searchRequest = {
         filterGroups,

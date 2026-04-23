@@ -2,10 +2,12 @@ import { getDeals, getAllProperties } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
 import { CreateRecordDialog } from "@/components/dashboard/create-record-dialog";
+import { formatDateForDisplay, getErrorMessage } from "@/lib/utils";
+import type { HubSpotObject } from "@/types/hubspot";
 
 export default async function DealsPage({
     searchParams,
@@ -23,18 +25,21 @@ export default async function DealsPage({
             getDeals(100, after, query, searchField),
             getAllProperties("deals")
         ]);
-        const deals = response.results.map((deal: any) => ({
-            ...deal,
-            dealname: deal.properties.dealname || deal.id,
-            amount: deal.properties.amount || "",
-            dealstage: deal.properties.dealstage || "",
-            pipeline: deal.properties.pipeline || "",
-            dealtype: deal.properties.dealtype || "",
-            closeDate: deal.properties.closedate ? new Date(deal.properties.closedate).toLocaleDateString() : "-",
-            createdAt: deal.properties.createdate ? new Date(deal.properties.createdate).toLocaleDateString() : "-",
-            lastModifiedAt: deal.properties.lastmodifieddate ? new Date(deal.properties.lastmodifieddate).toLocaleDateString() : "-",
-            source: deal.properties.hs_object_source || "-"
-        }));
+        const deals = response.results.map((deal) => {
+            const record = deal as HubSpotObject;
+            return {
+                ...record,
+                dealname: record.properties.dealname || record.id,
+                amount: record.properties.amount || "",
+                dealstage: record.properties.dealstage || "",
+                pipeline: record.properties.pipeline || "",
+                dealtype: record.properties.dealtype || "",
+                closeDate: formatDateForDisplay(record.properties.closedate),
+                createdAt: formatDateForDisplay(record.properties.createdate),
+                lastModifiedAt: formatDateForDisplay(record.properties.lastmodifieddate),
+                source: record.properties.hs_object_source || "-"
+            };
+        });
         const nextCursor = response.paging?.next?.after;
 
         const columns = [
@@ -68,7 +73,7 @@ export default async function DealsPage({
                 </Card>
             </div>
         );
-    } catch (error: any) {
-        return <div className="p-8 text-red-500">Error: {error.message}</div>;
+    } catch (error: unknown) {
+        return <div className="p-8 text-red-500">Error: {getErrorMessage(error)}</div>;
     }
 }

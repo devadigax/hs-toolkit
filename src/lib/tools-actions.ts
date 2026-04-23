@@ -1,6 +1,28 @@
 "use server";
 
 import { getHubSpotClient } from "@/lib/hubspot-server";
+import { getErrorMessage } from "@/lib/utils";
+
+type EngagementSearchResult = {
+    id: string;
+    properties?: {
+        hs_engagement_type?: string | null;
+    };
+};
+
+type EngagementSearchResponse = {
+    message?: string;
+    results?: EngagementSearchResult[];
+    paging?: {
+        next?: {
+            after?: string;
+        };
+    };
+};
+
+type ErrorPayload = {
+    message?: string;
+};
 
 // Helper to get correct singular association property name
 function getAssociationProperty(pluralType: string): string {
@@ -16,7 +38,7 @@ function getAssociationProperty(pluralType: string): string {
 }
 
 // Helper to map engagement type to V4 object type
-function getV4ObjectType(engagementType: string | null): string {
+function getV4ObjectType(engagementType?: string | null): string {
     if (!engagementType) return "notes"; // default?
     switch (engagementType) {
         case "NOTE": return "notes";
@@ -43,12 +65,12 @@ export async function copyObjectEngagements(objectType: string, sourceId: string
         console.log(`[CopyEngagements] Searching for engagements on ${objectType} (${associationProp}) = ${sourceId}`);
 
         // 1. Search for engagements associated with the source object
-        let allEngagements: any[] = [];
+        let allEngagements: EngagementSearchResult[] = [];
         let after: string | undefined = undefined;
         let hasMore = true;
 
         while (hasMore) {
-            const searchRequest: any = {
+            const searchRequest: Record<string, unknown> = {
                 filters: [
                     {
                         propertyName: associationProp, // "associations.deal" etc.
@@ -70,7 +92,7 @@ export async function copyObjectEngagements(objectType: string, sourceId: string
                 body: searchRequest,
             });
 
-            const searchResult: any = await searchResponse.json();
+            const searchResult = await searchResponse.json() as EngagementSearchResponse;
 
             if (!searchResponse.ok) {
                 console.error("[CopyEngagements] Search failed:", searchResult);
@@ -95,7 +117,7 @@ export async function copyObjectEngagements(objectType: string, sourceId: string
 
         // 2. Group by V4 Object Type
         const engagementsByType: Record<string, string[]> = {};
-        allEngagements.forEach((eng: any) => {
+        allEngagements.forEach((eng) => {
             const type = getV4ObjectType(eng.properties?.hs_engagement_type);
             if (!engagementsByType[type]) {
                 engagementsByType[type] = [];
@@ -134,10 +156,10 @@ export async function copyObjectEngagements(objectType: string, sourceId: string
                     let errorDetails;
                     try {
                         errorDetails = JSON.parse(responseText);
-                    } catch (e) {
+                    } catch {
                         errorDetails = responseText;
                     }
-                    const errorMessage = typeof errorDetails === 'object' && errorDetails.message ? errorDetails.message : JSON.stringify(errorDetails);
+                    const errorMessage = typeof errorDetails === "object" && errorDetails !== null && "message" in errorDetails ? String((errorDetails as ErrorPayload).message) : JSON.stringify(errorDetails);
                     console.error(`[CopyEngagements] Failed to associate ${v4Type} (Status: ${response.status}):`, errorDetails);
                     failureReasons.push(`${v4Type}: ${errorMessage}`);
                     continue;
@@ -184,11 +206,11 @@ export async function copyObjectEngagements(objectType: string, sourceId: string
             message: message
         };
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error copying/moving engagements:", error);
         return {
             success: false,
-            message: error.message || "An error occurred while processing engagements."
+            message: getErrorMessage(error) || "An error occurred while processing engagements."
         };
     }
 }
@@ -200,7 +222,7 @@ export async function unlinkObjectEngagements(objectType: string, objectId: stri
 
     try {
         const hubspotClient = await getHubSpotClient();
-        let allEngagements: any[] = []; // Store full objects to get types if needed
+        let allEngagements: EngagementSearchResult[] = []; // Store full objects to get types if needed
 
         // If specific IDs are passed, we might need to fetch them to get their types 
         // OR we make the caller pass the objects/types.
@@ -224,7 +246,7 @@ export async function unlinkObjectEngagements(objectType: string, objectId: stri
             let hasMore = true;
 
             while (hasMore) {
-                const searchRequest: any = {
+                const searchRequest: Record<string, unknown> = {
                     filters: [
                         {
                             propertyName: associationProp,
@@ -246,7 +268,7 @@ export async function unlinkObjectEngagements(objectType: string, objectId: stri
                     body: searchRequest,
                 });
 
-                const searchResult: any = await searchResponse.json();
+                const searchResult = await searchResponse.json() as EngagementSearchResponse;
 
                 if (!searchResponse.ok) {
                     console.error("[UnlinkEngagements] Search failed:", searchResult);
@@ -273,7 +295,7 @@ export async function unlinkObjectEngagements(objectType: string, objectId: stri
                     properties: ["hs_engagement_type"]
                 }
             });
-            const batchData: any = await batchReadResponse.json();
+            const batchData = await batchReadResponse.json() as EngagementSearchResponse;
             allEngagements = batchData.results || [];
         }
 
@@ -285,7 +307,7 @@ export async function unlinkObjectEngagements(objectType: string, objectId: stri
 
         // Group by V4 Object Type
         const engagementsByType: Record<string, string[]> = {};
-        allEngagements.forEach((eng: any) => {
+        allEngagements.forEach((eng) => {
             const type = getV4ObjectType(eng.properties?.hs_engagement_type);
             if (!engagementsByType[type]) {
                 engagementsByType[type] = [];
@@ -322,7 +344,7 @@ export async function unlinkObjectEngagements(objectType: string, objectId: stri
                     let errorDetails;
                     try {
                         errorDetails = JSON.parse(responseText);
-                    } catch (e) {
+                    } catch {
                         errorDetails = responseText;
                     }
                     console.error(`[UnlinkEngagements] Failed to unlink ${v4Type} (Status: ${response.status}):`, errorDetails);
@@ -335,11 +357,11 @@ export async function unlinkObjectEngagements(objectType: string, objectId: stri
             message: `Successfully unlinked ${successCount} engagement(s) from ${objectType} ${objectId}.`
         };
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error unlinking engagements:", error);
         return {
             success: false,
-            message: error.message || "An error occurred while unlinking engagements."
+            message: getErrorMessage(error) || "An error occurred while unlinking engagements."
         };
     }
 }
@@ -384,11 +406,11 @@ export async function associateObjects(
             let errorDetails;
             try {
                 errorDetails = JSON.parse(responseText);
-            } catch (e) {
+            } catch {
                 errorDetails = responseText;
             }
             console.error(`[AssociateObjects] Association failed (Status: ${response.status}):`, errorDetails);
-            throw new Error(typeof errorDetails === 'object' && errorDetails.message ? errorDetails.message : `Failed to associate objects (Status: ${response.status})`);
+            throw new Error(typeof errorDetails === "object" && errorDetails !== null && "message" in errorDetails ? String((errorDetails as ErrorPayload).message) : `Failed to associate objects (Status: ${response.status})`);
         }
 
         return {
@@ -396,11 +418,11 @@ export async function associateObjects(
             message: `Successfully associated ${fromObjectType} ${fromObjectId} with ${toObjectType} ${toObjectId}.`
         };
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error associating objects:", error);
         return {
             success: false,
-            message: error.message || "An error occurred while associating objects."
+            message: getErrorMessage(error) || "An error occurred while associating objects."
         };
     }
 }

@@ -5,23 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Copy, Loader2, Check } from "lucide-react";
+import { Copy, Loader2 } from "lucide-react";
 import { copyObjectEngagements } from "@/lib/tools-actions";
 import { useToast } from "@/hooks/use-toast";
 
-const OBJECT_TYPES = [
-    { value: "deals", label: "Deals" },
-    { value: "contacts", label: "Contacts" },
-    { value: "companies", label: "Companies" },
-    { value: "tickets", label: "Tickets" },
-    { value: "quotes", label: "Quotes" },
-    { value: "products", label: "Products" },
-];
-
 export function CopyEngagementsCard() {
-    const [objectType, setObjectType] = useState("deals");
+    const objectType = "deals";
     const [sourceId, setSourceId] = useState("");
     const [targetId, setTargetId] = useState("");
     const [shouldDelete, setShouldDelete] = useState(false);
@@ -56,7 +46,7 @@ export function CopyEngagementsCard() {
                     variant: "destructive",
                 });
             }
-        } catch (error) {
+        } catch {
             toast({
                 title: "Error",
                 description: "An unexpected error occurred.",
@@ -81,17 +71,6 @@ export function CopyEngagementsCard() {
                 <Copy className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
-                <div className="space-y-2 hidden">
-                    <Label htmlFor="objectType">Object Type</Label>
-                    <Select value="deals" disabled>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Deals" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="deals">Deals</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
                 <div className="text-sm text-muted-foreground pb-2">
                     Copying engagements between <strong>Deals</strong>.
                 </div>

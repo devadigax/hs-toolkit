@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Pencil, Check, X, Loader2 } from "lucide-react";
 import { updateObjectProperty } from "@/lib/actions/common";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
 
 interface EditPropertyProps {
     type: string;
@@ -43,10 +42,10 @@ export function EditProperty({ type, id, propertyKey, value: initialValue, onCan
                 toast({
                     variant: "destructive",
                     title: "Update failed",
-                    description: result.error || "Failed to update property.",
+                    description: "error" in result ? result.error : "Failed to update property.",
                 });
             }
-        } catch (error) {
+        } catch {
             toast({
                 variant: "destructive",
                 title: "Update failed",

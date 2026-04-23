@@ -1,5 +1,7 @@
 import "server-only";
 
+type EmitWarning = typeof process.emitWarning;
+
 // Suppress the "url.parse() behavior is not standardized" deprecation warning
 // This comes from the @hubspot/api-client dependency (likely via node-fetch v2)
 const originalEmitWarning = process.emitWarning;
@@ -10,8 +12,8 @@ process.emitWarning = function (warning: string | Error, ...args: unknown[]) {
     ) {
         return;
     }
-    return originalEmitWarning.apply(process, [warning, ...args] as any);
-};
+    return (originalEmitWarning as EmitWarning)(warning, ...(args as Parameters<EmitWarning>[1][]));
+} as EmitWarning;
 
 import { Client } from "@hubspot/api-client";
 import { redirect } from "next/navigation";

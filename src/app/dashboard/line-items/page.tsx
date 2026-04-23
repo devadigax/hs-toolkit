@@ -2,9 +2,11 @@ import { getLineItems, getAllProperties } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
+import { formatDateForDisplay, getErrorMessage } from "@/lib/utils";
+import type { HubSpotAssociationCollection, HubSpotObject } from "@/types/hubspot";
 
 export default async function LineItemsPage({
     searchParams,
@@ -24,10 +26,11 @@ export default async function LineItemsPage({
         ]);
 
         // Format associations for display
-        const lineItems = response.results.map((item: any) => {
-            const associations = item.associations || {};
+        const lineItems = response.results.map((item) => {
+            const record = item as HubSpotObject;
+            const associations = record.associations || {};
             const associationSummary = Object.entries(associations)
-                .map(([type, group]: [string, any]) => {
+                .map(([type, group]: [string, HubSpotAssociationCollection]) => {
                     const count = group.results?.length || 0;
                     if (count === 0) return null;
                     // Format type name (e.g. "line_items" -> "Line Items")
@@ -38,18 +41,18 @@ export default async function LineItemsPage({
                 .join(", ");
 
             return {
-                ...item,
+                ...record,
                 associationsSummary: associationSummary || "None",
-                name: item.properties.name || item.id,
-                hs_sku: item.properties.hs_sku || "",
-                description: item.properties.description || "",
-                price: item.properties.price || "",
-                quantity: item.properties.quantity || "",
-                amount: item.properties.amount || "",
-                discount: item.properties.discount || "",
-                createdAt: item.properties.createdate ? new Date(item.properties.createdate).toLocaleDateString() : "-",
-                lastModifiedAt: item.properties.lastmodifieddate ? new Date(item.properties.lastmodifieddate).toLocaleDateString() : "-",
-                source: item.properties.hs_object_source || "-"
+                name: record.properties.name || record.id,
+                hs_sku: record.properties.hs_sku || "",
+                description: record.properties.description || "",
+                price: record.properties.price || "",
+                quantity: record.properties.quantity || "",
+                amount: record.properties.amount || "",
+                discount: record.properties.discount || "",
+                createdAt: formatDateForDisplay(record.properties.createdate),
+                lastModifiedAt: formatDateForDisplay(record.properties.lastmodifieddate),
+                source: record.properties.hs_object_source || "-"
             };
         });
 
@@ -87,7 +90,7 @@ export default async function LineItemsPage({
                 </Card>
             </div>
         );
-    } catch (error: any) {
-        return <div className="p-8 text-red-500">Error: {error.message}</div>;
+    } catch (error: unknown) {
+        return <div className="p-8 text-red-500">Error: {getErrorMessage(error)}</div>;
     }
 }

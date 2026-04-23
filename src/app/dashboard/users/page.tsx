@@ -46,7 +46,7 @@ export default async function UsersPage({
                 </Card>
             </div>
         );
-    } catch (error) {
+    } catch {
         return (
             <div className="flex-1 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

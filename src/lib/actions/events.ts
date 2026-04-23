@@ -1,8 +1,9 @@
 "use server";
 
 import { getHubSpotClient } from "@/lib/hubspot-server";
-import { serialize } from "@/lib/utils";
+import { getErrorMessage, serialize } from "@/lib/utils";
 import { updateTag } from "next/cache";
+import type { MarketingEvent, MarketingEventsResponse } from "@/types/hubspot";
 
 export async function getMarketingEvents(limit: number = 100, after?: string) {
     const client = await getHubSpotClient();
@@ -16,10 +17,10 @@ export async function getMarketingEvents(limit: number = 100, after?: string) {
         path: `/marketing/v3/marketing-events?${query.toString()}`
     });
 
-    const result = (await response.json()) as any;
+    const result = (await response.json()) as MarketingEventsResponse;
 
     if (result.results && Array.isArray(result.results)) {
-        result.results.sort((a: any, b: any) => {
+        result.results.sort((a: MarketingEvent, b: MarketingEvent) => {
             const dateA = new Date(a.startDateTime || a.createdAt || 0).getTime();
             const dateB = new Date(b.startDateTime || b.createdAt || 0).getTime();
             return dateB - dateA;
@@ -36,7 +37,7 @@ export async function getMarketingEventByObjectId(objectId: string) {
             method: 'GET',
             path: `/marketing/v3/marketing-events/${objectId}`
         });
-        const result = (await response.json()) as any;
+        const result = (await response.json()) as MarketingEvent;
 
         return serialize({
             id: result.objectId || result.externalEventId || objectId,
@@ -44,7 +45,7 @@ export async function getMarketingEventByObjectId(objectId: string) {
             externalEventId: result.externalEventId,
             appInfo: result.appInfo
         });
-    } catch (error) {
+    } catch {
         throw new Error("Marketing Event not found");
     }
 }
@@ -71,13 +72,13 @@ export async function createMarketingEvent(properties: Record<string, string>) {
             body
         });
 
-        const result = (await response.json()) as any;
+        const result = (await response.json()) as { status?: string; message?: string };
         if (result.status === 'error') throw new Error(result.message);
 
         updateTag(`events-list`);
         return { success: true, data: serialize(result) };
-    } catch (error: any) {
-        return { success: false, error: error.message };
+    } catch (error: unknown) {
+        return { success: false, error: getErrorMessage(error) };
     }
 }
 
@@ -91,13 +92,13 @@ export async function updateMarketingEventReq(objectId: string, properties: Reco
             body: properties
         });
 
-        const result = (await response.json()) as any;
+        const result = (await response.json()) as { status?: string; message?: string };
         if (result.status === 'error') throw new Error(result.message);
 
         updateTag(`events-list`);
         updateTag(`events-${objectId}`);
         return { success: true };
-    } catch (error: any) {
-        return { success: false, error: error.message };
+    } catch (error: unknown) {
+        return { success: false, error: getErrorMessage(error) };
     }
 }

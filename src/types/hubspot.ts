@@ -1,6 +1,6 @@
 export interface HubSpotObject {
     id: string;
-    properties: Record<string, string | null>;
+    properties: Record<string, string | number | boolean | null | undefined>;
     createdAt: string;
     updatedAt: string;
     archived?: boolean;
@@ -13,7 +13,19 @@ export interface HubSpotAssociation {
 
 export interface HubSpotAssociationResult {
     id: string;
-    type: string;
+    type?: string;
+    associationTypes?: AssociationType[];
+    [key: string]: string | number | boolean | null | undefined | AssociationType[];
+}
+
+export interface AssociationType {
+    category?: string;
+    label?: string;
+    typeId?: number;
+}
+
+export interface HubSpotAssociationCollection {
+    results: HubSpotAssociationResult[];
 }
 
 export interface SearchResult<T = HubSpotObject> {
@@ -83,9 +95,59 @@ export interface AccountDetails {
     dataHostingLocation: string;
 }
 
-export interface ApiUsage {
-    daily?: {
-        usage: number;
-        limit: number;
+export interface ApiUsageResult {
+    name: string;
+    currentUsage: number;
+    usageLimit: number;
+    resetsAt: string;
+    fetchStatus: string;
+}
+
+export interface ApiUsageResponse {
+    results: ApiUsageResult[];
+}
+
+export interface CustomObjectSchema {
+    objectTypeId: string;
+    fullyQualifiedName: string;
+    primaryDisplayProperty?: string;
+    labels: {
+        singular: string;
+        plural: string;
     };
+}
+
+export interface MarketingEvent {
+    objectId?: string;
+    externalEventId?: string;
+    eventName?: string;
+    eventStatus?: string;
+    eventType?: string;
+    eventOrganizer?: string;
+    startDateTime?: string;
+    endDateTime?: string;
+    createdAt?: string;
+    appInfo?: {
+        id?: string;
+    };
+    [key: string]: unknown;
+}
+
+export interface MarketingEventsResponse {
+    results: MarketingEvent[];
+    paging?: {
+        next?: {
+            after: string;
+        };
+    };
+}
+
+export interface AssociationBatchReadResult {
+    from?: { id?: string };
+    _from?: { id?: string };
+    to?: HubSpotAssociationResult[];
+}
+
+export interface AssociationBatchReadResponse {
+    results: AssociationBatchReadResult[];
 }

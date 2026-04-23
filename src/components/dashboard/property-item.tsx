@@ -13,6 +13,12 @@ import {
 import { History } from "lucide-react";
 import { getPropertyHistory } from "@/lib/actions";
 
+interface PropertyHistoryEntry {
+    timestamp: string;
+    value: string;
+    sourceType?: string;
+}
+
 interface PropertyItemProps {
     label: string;
     value: string | number | null | undefined;
@@ -22,7 +28,7 @@ interface PropertyItemProps {
 }
 
 export function PropertyItem({ label, value, type, id, propertyKey }: PropertyItemProps) {
-    const [history, setHistory] = useState<any[]>([]);
+    const [history, setHistory] = useState<PropertyHistoryEntry[]>([]);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
 
@@ -32,7 +38,7 @@ export function PropertyItem({ label, value, type, id, propertyKey }: PropertyIt
             setLoading(true);
             try {
                 const data = await getPropertyHistory(type, id, propertyKey);
-                setHistory(data);
+                setHistory(data as PropertyHistoryEntry[]);
             } catch (error) {
                 console.error("Failed to fetch history", error);
             } finally {
@@ -75,7 +81,7 @@ export function PropertyItem({ label, value, type, id, propertyKey }: PropertyIt
                             ) : history.length === 0 ? (
                                 <div className="text-center py-4 text-sm text-muted-foreground">No history available via API.</div>
                             ) : (
-                                history.map((item: any, index: number) => (
+                                history.map((item, index) => (
                                     <div key={index} className="flex flex-col border-b pb-2 last:border-0">
                                         <span className="font-medium text-sm">{item.value}</span>
                                         <span className="text-xs text-muted-foreground">

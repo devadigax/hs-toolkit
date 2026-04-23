@@ -35,12 +35,12 @@ A HubSpot Toolkit dashboard application built with Next.js, Shadcn/UI, and the H
     ```
 
 3.  Set up environment variables:
-    Create a `.env.local` file with:
+    Create a local env file such as `.env.local` with:
     ```env
-    HUBSPOT_ACCESS_TOKEN=your_access_token
-    # Or for OAuth
     HUBSPOT_CLIENT_ID=your_client_id
     HUBSPOT_CLIENT_SECRET=your_client_secret
+    HUBSPOT_REDIRECT_URI=http://localhost:3000/api/auth/callback
+    HUBSPOT_SCOPES=oauth crm.objects.contacts.read
     ```
 
 4.  Run the development server:

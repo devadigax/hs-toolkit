@@ -4,14 +4,15 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
+import { formatDateForDisplay } from "@/lib/utils";
+import type { HubSpotAssociationCollection, HubSpotAssociationResult } from "@/types/hubspot";
 
 interface AssociationsListProps {
-    associations: Record<string, any[]>;
-    currentType: string;
+    associations?: Record<string, HubSpotAssociationCollection>;
 }
 
-function getObjectName(item: any, type: string) {
-    if (type === "contacts") return item.firstname ? `${item.firstname} ${item.lastname || ''}` : item.email;
+function getObjectName(item: HubSpotAssociationResult, type: string) {
+    if (type === "contacts") return item.firstname ? `${item.firstname} ${item.lastname || ""}` : item.email;
     if (type === "companies") return item.name;
     if (type === "deals") return item.dealname || item.name;
     if (type === "tickets") return item.subject;
@@ -23,24 +24,26 @@ function getObjectName(item: any, type: string) {
     return item.name || item.hs_name || item.dealname || item.subject || item.hs_title || item.hs_meeting_title || item.hs_task_subject || item.hs_body_preview || item.email || `ID: ${item.id}`;
 }
 
-function AssociationCard({ item, type, pathType }: { item: any; type: string; pathType: string }) {
-    const name = getObjectName(item, type) || `ID: ${item.id}`;
+function AssociationCard({ item, type, pathType }: { item: HubSpotAssociationResult; type: string; pathType: string }) {
+    const name = String(getObjectName(item, type) || `ID: ${item.id}`);
 
     const labels = item.associationTypes
-        ?.map((t: any) => t.label)
+        ?.map((associationType) => associationType.label)
         .filter(Boolean)
         .join(", ");
 
     const dateRaw = item.hs_createdate || item.createdate || item.hs_timestamp;
-    const date = dateRaw ? new Date(dateRaw).toLocaleDateString() : null;
+    const date = formatDateForDisplay(dateRaw, "");
     const by = item.hs_created_by_user_id || item.hs_created_by;
 
     const isLineItem = pathType === "line-items";
-    const amount = item.amount ? `$${Number(item.amount).toLocaleString()}` : null;
+    const amount = typeof item.amount === "string" || typeof item.amount === "number" ? `$${Number(item.amount).toLocaleString()}` : null;
     const quantity = item.quantity;
-    const discount = item.discount && Number(item.discount) > 0 ? `$${Number(item.discount).toLocaleString()}` : null;
-    const price = item.price ? `$${Number(item.price).toLocaleString()}` : null;
-    const sku = item.hs_sku;
+    const discount = (typeof item.discount === "string" || typeof item.discount === "number") && Number(item.discount) > 0 ? `$${Number(item.discount).toLocaleString()}` : null;
+    const price = typeof item.price === "string" || typeof item.price === "number" ? `$${Number(item.price).toLocaleString()}` : null;
+    const sku = typeof item.hs_sku === "string" || typeof item.hs_sku === "number" ? String(item.hs_sku) : null;
+    const quantityLabel = typeof quantity === "string" || typeof quantity === "number" ? String(quantity) : null;
+    const byLabel = typeof by === "string" || typeof by === "number" ? String(by) : null;
 
     return (
         <Button
@@ -58,7 +61,7 @@ function AssociationCard({ item, type, pathType }: { item: any; type: string; pa
                 {isLineItem && (sku || amount || price || quantity || discount) && (
                     <div className="flex flex-wrap text-[10px] text-muted-foreground gap-x-2 mt-1 w-full items-center">
                         {sku && <span className="font-mono bg-muted px-1 rounded" title="SKU">{sku}</span>}
-                        {quantity && <span>Qty: {quantity}</span>}
+                        {quantityLabel && <span>Qty: {quantityLabel}</span>}
                         {price && <span>Price: {price}</span>}
                         {discount && <span className="text-red-500">Disc: {discount}</span>}
                         {amount && <span className="font-medium text-foreground">Total: {amount}</span>}
@@ -69,7 +72,7 @@ function AssociationCard({ item, type, pathType }: { item: any; type: string; pa
                     <div className="flex flex-wrap text-[10px] text-muted-foreground gap-x-2 mt-1 w-full items-center truncate">
                         {labels && <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-sm">{labels}</span>}
                         {date && <span>Date: {date}</span>}
-                        {by && <span>By: {by}</span>}
+                        {byLabel && <span>By: {byLabel}</span>}
                     </div>
                 )}
             </Link>
@@ -77,7 +80,7 @@ function AssociationCard({ item, type, pathType }: { item: any; type: string; pa
     );
 }
 
-export function AssociationsList({ associations, currentType }: AssociationsListProps) {
+export function AssociationsList({ associations }: AssociationsListProps) {
     if (!associations || Object.keys(associations).length === 0) {
         return null;
     }
@@ -104,12 +107,11 @@ export function AssociationsList({ associations, currentType }: AssociationsList
             <CardContent>
                 <div className="space-y-6">
                     {Object.entries(associations).map(([type, items]) => {
-                        // items is a CollectionResponseSimplePublicObjectId, so items.results is the array
-                        const rawResults = (items as any).results || [];
+                        const rawResults = items.results || [];
                         if (rawResults.length === 0) return null;
 
                         // Deduplicate results by id
-                        const uniqueResults = Array.from(new Map(rawResults.map((item: any) => [item.id, item])).values());
+                        const uniqueResults = Array.from(new Map(rawResults.map((item) => [item.id, item])).values());
 
                         return (
                             <div key={type} className="space-y-2">
@@ -117,7 +119,7 @@ export function AssociationsList({ associations, currentType }: AssociationsList
                                     {formatType(type)} ({uniqueResults.length})
                                 </h3>
                                 <div className="flex flex-col space-y-2">
-                                    {uniqueResults.map((item: any) => (
+                                    {uniqueResults.map((item) => (
                                         <AssociationCard
                                             key={item.id}
                                             item={item}

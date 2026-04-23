@@ -5,6 +5,7 @@ import { unstable_cache } from "next/cache";
 import { Client } from "@hubspot/api-client";
 import { serialize } from "@/lib/utils";
 import { hashString } from "@/lib/server-utils";
+import type { CustomObjectSchema } from "@/types/hubspot";
 
 export async function getCustomObjectSchemas() {
     const accessToken = await getAccessToken();
@@ -14,9 +15,9 @@ export async function getCustomObjectSchemas() {
             const hubspotClient = new Client({ accessToken: token });
             try {
                 const response = await hubspotClient.crm.schemas.coreApi.getAll();
-                return serialize(response.results);
-            } catch (e: any) {
-                console.error("Error fetching custom object schemas:", e.message);
+                return serialize(response.results as CustomObjectSchema[]);
+            } catch (e: unknown) {
+                console.error("Error fetching custom object schemas:", e instanceof Error ? e.message : e);
                 return [];
             }
         },

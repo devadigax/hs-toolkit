@@ -1,9 +1,8 @@
 import { getDashboardStats, getAccountDetails, getDailyApiUsage } from "@/lib/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Building, DollarSign, Package, Ticket } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { RefreshButton } from "@/components/dashboard/refresh-button";
+import type { ApiUsageResult } from "@/types/hubspot";
 
 export default async function DashboardPage() {
     const { counts } = await getDashboardStats();
@@ -126,7 +125,7 @@ export default async function DashboardPage() {
                     </CardHeader>
                     <CardContent>
                         {apiUsage && apiUsage.results && apiUsage.results.length > 0 ? (
-                            apiUsage.results.map((usage: any) => (
+                            apiUsage.results.map((usage: ApiUsageResult) => (
                                 <div key={usage.name} className="space-y-4">
                                     <div className="flex items-center justify-between">
                                         <div className="space-y-1">

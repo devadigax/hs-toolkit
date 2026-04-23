@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wrench } from "lucide-react";
 import { CopyEngagementsCard } from "@/components/tools/copy-engagements-card";
 import { UnlinkEngagementsCard } from "@/components/tools/unlink-engagements-card";

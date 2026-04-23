@@ -3,7 +3,7 @@
 import { Client } from "@hubspot/api-client";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { PRIVATE_TOKEN_COOKIE } from "@/lib/constants";
+import { COOKIE_NAME, EXPIRES_IN_COOKIE, PRIVATE_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from "@/lib/constants";
 
 export async function verifyAndLoginWithToken(formData: FormData) {
     const token = formData.get("token") as string;
@@ -25,6 +25,9 @@ export async function verifyAndLoginWithToken(formData: FormData) {
 
         // Set cookie
         const cookieStore = await cookies();
+        cookieStore.delete(COOKIE_NAME);
+        cookieStore.delete(REFRESH_TOKEN_COOKIE);
+        cookieStore.delete(EXPIRES_IN_COOKIE);
         cookieStore.set(PRIVATE_TOKEN_COOKIE, token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",

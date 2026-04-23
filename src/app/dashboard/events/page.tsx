@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { getObjectsByType, getAllProperties } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
@@ -6,6 +5,8 @@ import { Search } from "@/components/ui/search";
 import { Card, CardContent } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { CreateRecordDialog } from "@/components/dashboard/create-record-dialog";
+import { formatDateForDisplay, getErrorMessage } from "@/lib/utils";
+import type { MarketingEvent, MarketingEventsResponse } from "@/types/hubspot";
 
 export default async function MarketingEventsPage({
     searchParams,
@@ -22,19 +23,20 @@ export default async function MarketingEventsPage({
         const [response, allProperties] = await Promise.all([
             getObjectsByType("events", 100, after, query, undefined, searchField),
             getAllProperties("events")
-        ]);
+        ]) as [MarketingEventsResponse, string[]];
 
-        const events = response.results.map((event: any) => {
+        const events = response.results.map((event) => {
+            const record = event as MarketingEvent;
             return {
-                id: event.objectId || event.externalEventId,
-                eventName: event.eventName || "-",
-                eventStatus: event.eventStatus || "-",
-                eventType: event.eventType || "-",
-                eventOrganizer: event.eventOrganizer || "-",
-                startDateTime: event.startDateTime ? new Date(event.startDateTime).toLocaleDateString("en-US") : "-",
-                endDateTime: event.endDateTime ? new Date(event.endDateTime).toLocaleDateString("en-US") : "-",
-                createdAt: event.createdAt ? new Date(event.createdAt).toLocaleDateString("en-US") : "-",
-                externalAccountId: event.appInfo ? event.appInfo.id : "-"
+                id: record.objectId || record.externalEventId,
+                eventName: record.eventName || "-",
+                eventStatus: record.eventStatus || "-",
+                eventType: record.eventType || "-",
+                eventOrganizer: record.eventOrganizer || "-",
+                startDateTime: formatDateForDisplay(record.startDateTime),
+                endDateTime: formatDateForDisplay(record.endDateTime),
+                createdAt: formatDateForDisplay(record.createdAt),
+                externalAccountId: record.appInfo ? record.appInfo.id : "-"
             };
         });
 
@@ -69,8 +71,9 @@ export default async function MarketingEventsPage({
                 </Card>
             </div>
         );
-    } catch (error: any) {
-        if (error.message.includes("No value for refresh token found")) {
+    } catch (error: unknown) {
+        const message = getErrorMessage(error);
+        if (message.includes("No value for refresh token found")) {
             return (
                 <div className="flex flex-col items-center justify-center p-8 text-center text-red-500">
                     <p>Authentication Failed. please login again.</p>
@@ -82,8 +85,8 @@ export default async function MarketingEventsPage({
         }
 
         return (
-            <div className="p-8 text-red-500">
-                Error loading marketing events: {error.message}
+                <div className="p-8 text-red-500">
+                Error loading marketing events: {message}
             </div>
         )
     }

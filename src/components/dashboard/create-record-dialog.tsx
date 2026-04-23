@@ -76,10 +76,10 @@ export function CreateRecordDialog({ type, triggerLabel, properties: propList, o
                 toast({
                     variant: "destructive",
                     title: "Creation failed",
-                    description: result.error || "Failed to create record.",
+                    description: "error" in result ? result.error : "Failed to create record.",
                 });
             }
-        } catch (error) {
+        } catch {
             toast({
                 variant: "destructive",
                 title: "Creation failed",

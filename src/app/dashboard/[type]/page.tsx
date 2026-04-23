@@ -1,12 +1,13 @@
-import { Suspense } from "react";
 import { getObjectsByType, getAllProperties, getCustomObjectSchemas } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
 import { CreateRecordDialog } from "@/components/dashboard/create-record-dialog";
+import { getErrorMessage } from "@/lib/utils";
+import type { CustomObjectSchema, HubSpotObject } from "@/types/hubspot";
 
 export default async function GenericObjectPage({
     params,
@@ -29,23 +30,26 @@ export default async function GenericObjectPage({
 
     try {
         const [response, allProperties, schemas] = await Promise.all([
-            getObjectsByType(type as any, 100, after, query, undefined, searchField),
+            getObjectsByType(type as keyof typeof import("@/lib/actions/config").OBJECT_PROPERTIES, 100, after, query, undefined, searchField),
             getAllProperties(type),
             getCustomObjectSchemas()
         ]);
 
-        const schema = schemas.find((s: any) => s.objectTypeId === type || s.fullyQualifiedName === type);
+        const schema = schemas.find((s: CustomObjectSchema) => s.objectTypeId === type || s.fullyQualifiedName === type);
         const objectLabel = schema ? schema.labels.plural : type;
         const primaryProperty = schema?.primaryDisplayProperty;
+        const formatDateValue = (value: string | number | boolean | null | undefined) =>
+            typeof value === "string" || typeof value === "number"
+                ? new Date(value).toLocaleDateString("en-US")
+                : undefined;
 
-        const objects = response.results.map((obj: any) => {
-            const formatted: Record<string, any> = { id: obj.id, ...obj.properties };
+        const objects = response.results.map((obj) => {
+            const record = obj as HubSpotObject;
+            const formatted: Record<string, string | number | boolean | null | undefined> = { id: record.id, ...record.properties };
 
             // Format dates if they exist
-            if (formatted.createdate) formatted.createdAt = new Date(formatted.createdate).toLocaleDateString("en-US");
-            if (formatted.hs_createdate) formatted.createdAt = new Date(formatted.hs_createdate).toLocaleDateString("en-US");
-            if (formatted.lastmodifieddate) formatted.lastModifiedAt = new Date(formatted.lastmodifieddate).toLocaleDateString("en-US");
-            if (formatted.hs_lastmodifieddate) formatted.lastModifiedAt = new Date(formatted.hs_lastmodifieddate).toLocaleDateString("en-US");
+            formatted.createdAt = formatDateValue(formatted.createdate) ?? formatDateValue(formatted.hs_createdate);
+            formatted.lastModifiedAt = formatDateValue(formatted.lastmodifieddate) ?? formatDateValue(formatted.hs_lastmodifieddate);
 
             // Format source
             formatted.source = formatted.hs_object_source || "-";
@@ -96,8 +100,9 @@ export default async function GenericObjectPage({
                 </Card>
             </div>
         );
-    } catch (error: any) {
-        if (error.message?.includes("No value for refresh token found")) {
+    } catch (error: unknown) {
+        const message = getErrorMessage(error);
+        if (message.includes("No value for refresh token found")) {
             return (
                 <div className="flex flex-col items-center justify-center p-8 text-center text-red-500">
                     <p>Authentication Failed. please login again.</p>
@@ -110,7 +115,7 @@ export default async function GenericObjectPage({
 
         return (
             <div className="p-8 text-red-500">
-                Error loading {type}: {error.message}
+                Error loading {type}: {message}
             </div>
         )
     }

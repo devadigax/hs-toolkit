@@ -6,6 +6,12 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Trash, Loader2, AlertCircle } from "lucide-react";
 import { getDeletedObjectsByType } from "@/lib/actions/common";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import type { HubSpotObject } from "@/types/hubspot";
+import { formatDateForDisplay, getErrorMessage } from "@/lib/utils";
+
+type ArchivedHubSpotObject = HubSpotObject & {
+    archivedAt?: string;
+};
 
 interface DeletedRecordsViewProps {
     objectType: string;
@@ -14,20 +20,20 @@ interface DeletedRecordsViewProps {
 export function DeletedRecordsView({ objectType }: DeletedRecordsViewProps) {
     const [open, setOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
-    const [data, setData] = useState<any[]>([]);
+    const [data, setData] = useState<ArchivedHubSpotObject[]>([]);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (open) {
-            setError(null);
             startTransition(async () => {
                 try {
+                    setError(null);
                     // Start with high limit to see something, no pagination for V1
-                    const result = await getDeletedObjectsByType(objectType as any, 50);
-                    setData(result.results);
-                } catch (err) {
+                    const result = await getDeletedObjectsByType(objectType as keyof typeof import("@/lib/actions/config").OBJECT_PROPERTIES, 50);
+                    setData(result.results as ArchivedHubSpotObject[]);
+                } catch (err: unknown) {
                     console.error(err);
-                    setError("Failed to load deleted records. You may not have permission to view archived objects.");
+                    setError(`Failed to load deleted records. ${getErrorMessage(err)}`);
                 }
             });
         }
@@ -73,7 +79,7 @@ export function DeletedRecordsView({ objectType }: DeletedRecordsViewProps) {
                                             <span className="font-semibold text-sm">
                                                 {/* Try to find a name property, fallback to ID */}
                                                 {item.properties.firstname
-                                                    ? `${item.properties.firstname} ${item.properties.lastname || ''}`
+                                                    ? `${item.properties.firstname} ${item.properties.lastname || ""}`
                                                     : item.properties.name || item.properties.dealname || item.properties.subject || item.id}
                                             </span>
                                             <span className="text-xs text-muted-foreground font-mono">{item.id}</span>
@@ -84,7 +90,7 @@ export function DeletedRecordsView({ objectType }: DeletedRecordsViewProps) {
                                                     Deleted by: User {item.properties.hs_updated_by_user_id}
                                                 </span>
                                             )}
-                                            Archived: {item.archivedAt ? new Date(item.archivedAt).toLocaleString() : "Unknown"}
+                                            Archived: {item.archivedAt ? formatDateForDisplay(item.archivedAt, "Unknown") : "Unknown"}
                                         </div>
                                     </div>
                                 ))}

@@ -6,6 +6,8 @@ import { Search } from "@/components/ui/search";
 import { InactiveToggle } from "@/components/dashboard/inactive-toggle";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
+import { formatDateForDisplay, getErrorMessage } from "@/lib/utils";
+import type { HubSpotObject } from "@/types/hubspot";
 
 export default async function ProductsPage({
     searchParams,
@@ -25,18 +27,21 @@ export default async function ProductsPage({
             getProducts(100, after, query, showInactiveBool, searchField),
             getAllProperties("products")
         ]);
-        const products = response.results.map((product: any) => ({
-            ...product,
-            name: product.properties.name || product.id,
-            hs_sku: product.properties.hs_sku || "",
-            description: product.properties.description || "",
-            price: product.properties.price || "",
-            hs_status: product.properties.hs_status || "",
-            hs_folder_id: product.properties.hs_folder_id || "-",
-            createdAt: product.properties.createdate ? new Date(product.properties.createdate).toLocaleDateString() : "-",
-            lastModifiedAt: product.properties.lastmodifieddate ? new Date(product.properties.lastmodifieddate).toLocaleDateString() : "-",
-            source: product.properties.hs_object_source || "-"
-        }));
+        const products = response.results.map((product) => {
+            const record = product as HubSpotObject;
+            return {
+                ...record,
+                name: record.properties.name || record.id,
+                hs_sku: record.properties.hs_sku || "",
+                description: record.properties.description || "",
+                price: record.properties.price || "",
+                hs_status: record.properties.hs_status || "",
+                hs_folder_id: record.properties.hs_folder_id || "-",
+                createdAt: formatDateForDisplay(record.properties.createdate),
+                lastModifiedAt: formatDateForDisplay(record.properties.lastmodifieddate),
+                source: record.properties.hs_object_source || "-"
+            };
+        });
         const nextCursor = response.paging?.next?.after;
 
         const columns = [
@@ -70,7 +75,7 @@ export default async function ProductsPage({
                 </Card>
             </div>
         );
-    } catch (error: any) {
-        return <div className="p-8 text-red-500">Error: {error.message}</div>;
+    } catch (error: unknown) {
+        return <div className="p-8 text-red-500">Error: {getErrorMessage(error)}</div>;
     }
 }

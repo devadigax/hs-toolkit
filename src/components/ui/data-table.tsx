@@ -20,7 +20,13 @@ interface Column {
     header: string;
     accessorKey: string;
     hiddenByDefault?: boolean;
-    cell?: (row: any) => React.ReactNode;
+    cell?: (row: TableRowData) => React.ReactNode;
+}
+
+export interface TableRowData {
+    id?: string;
+    properties?: Record<string, string | number | boolean | null | undefined>;
+    [key: string]: unknown;
 }
 
 import Link from "next/link";
@@ -28,9 +34,22 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 
-export function DataTable({ data, columns, clickableColumn, title }: { data: any[]; columns: Column[]; clickableColumn?: string, title?: string }) {
+export function DataTable({ data, columns, clickableColumn, title }: { data: TableRowData[]; columns: Column[]; clickableColumn?: string, title?: string }) {
     const pathname = usePathname();
     const linkColumn = clickableColumn || columns[0]?.accessorKey;
+    const renderValue = (value: unknown) => {
+        if (
+            value === null ||
+            value === undefined ||
+            typeof value === "string" ||
+            typeof value === "number" ||
+            typeof value === "boolean"
+        ) {
+            return value as React.ReactNode;
+        }
+
+        return JSON.stringify(value);
+    };
 
     // Initialize visible columns based on hiddenByDefault
     const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(() => {
@@ -105,10 +124,10 @@ export function DataTable({ data, columns, clickableColumn, title }: { data: any
                                                             href={`${pathname}/${row.id}`}
                                                             className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
                                                         >
-                                                            {value || row.id}
+                                                            {renderValue(value) || row.id}
                                                         </Link>
                                                     ) : (
-                                                        value
+                                                        renderValue(value)
                                                     )
                                                 )}
                                             </TableCell>

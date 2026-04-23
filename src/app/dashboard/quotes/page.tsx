@@ -2,9 +2,11 @@ import { getQuotes, getAllProperties } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
+import { formatDateForDisplay, getErrorMessage } from "@/lib/utils";
+import type { HubSpotObject } from "@/types/hubspot";
 
 export default async function QuotesPage({
     searchParams,
@@ -24,16 +26,19 @@ export default async function QuotesPage({
         ]);
         // Quotes API response structure might differ slightly, checking generic basicApi response
         // Assuming results exists
-        const quotes = response.results.map((quote: any) => ({
-            ...quote,
-            hs_title: quote.properties.hs_title || quote.id,
-            hs_expiration_date: quote.properties.hs_expiration_date ? new Date(quote.properties.hs_expiration_date).toLocaleDateString() : "-",
-            hs_status: quote.properties.hs_status || "",
-            hs_quote_amount: quote.properties.hs_quote_amount || "",
-            createdAt: quote.properties.createdate ? new Date(quote.properties.createdate).toLocaleDateString() : "-",
-            lastModifiedAt: quote.properties.lastmodifieddate ? new Date(quote.properties.lastmodifieddate).toLocaleDateString() : "-",
-            source: quote.properties.hs_object_source || "-"
-        }));
+        const quotes = response.results.map((quote) => {
+            const record = quote as HubSpotObject;
+            return {
+                ...record,
+                hs_title: record.properties.hs_title || record.id,
+                hs_expiration_date: formatDateForDisplay(record.properties.hs_expiration_date),
+                hs_status: record.properties.hs_status || "",
+                hs_quote_amount: record.properties.hs_quote_amount || "",
+                createdAt: formatDateForDisplay(record.properties.createdate),
+                lastModifiedAt: formatDateForDisplay(record.properties.lastmodifieddate),
+                source: record.properties.hs_object_source || "-"
+            };
+        });
         const nextCursor = response.paging?.next?.after;
 
         const columns = [
@@ -64,7 +69,7 @@ export default async function QuotesPage({
                 </Card>
             </div>
         );
-    } catch (error: any) {
-        return <div className="p-8 text-red-500">Error: {error.message}</div>;
+    } catch (error: unknown) {
+        return <div className="p-8 text-red-500">Error: {getErrorMessage(error)}</div>;
     }
 }

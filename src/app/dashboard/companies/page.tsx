@@ -2,10 +2,12 @@ import { getCompanies, getAllProperties } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
 import { CreateRecordDialog } from "@/components/dashboard/create-record-dialog";
+import { formatDateForDisplay, getErrorMessage } from "@/lib/utils";
+import type { HubSpotObject } from "@/types/hubspot";
 
 export default async function CompaniesPage({
     searchParams,
@@ -23,21 +25,24 @@ export default async function CompaniesPage({
             getCompanies(100, after, query, searchField),
             getAllProperties("companies")
         ]);
-        const companies = response.results.map((company: any) => ({
-            ...company,
-            name: company.properties.name || "",
-            domain: company.properties.domain || "",
-            industry: company.properties.industry || "",
-            phone: company.properties.phone || "",
-            website: company.properties.website || "",
-            city: company.properties.city || "",
-            state: company.properties.state || "",
-            country: company.properties.country || "",
-            lifecyclestage: company.properties.lifecyclestage || "",
-            createdAt: company.properties.createdate ? new Date(company.properties.createdate).toLocaleDateString() : "-",
-            lastModifiedAt: company.properties.lastmodifieddate ? new Date(company.properties.lastmodifieddate).toLocaleDateString() : "-",
-            source: company.properties.hs_object_source || "-"
-        }));
+        const companies = response.results.map((company) => {
+            const record = company as HubSpotObject;
+            return {
+                ...record,
+                name: record.properties.name || "",
+                domain: record.properties.domain || "",
+                industry: record.properties.industry || "",
+                phone: record.properties.phone || "",
+                website: record.properties.website || "",
+                city: record.properties.city || "",
+                state: record.properties.state || "",
+                country: record.properties.country || "",
+                lifecyclestage: record.properties.lifecyclestage || "",
+                createdAt: formatDateForDisplay(record.properties.createdate),
+                lastModifiedAt: formatDateForDisplay(record.properties.lastmodifieddate),
+                source: record.properties.hs_object_source || "-"
+            };
+        });
         const nextCursor = response.paging?.next?.after;
 
         const columns = [
@@ -74,7 +79,7 @@ export default async function CompaniesPage({
                 </Card>
             </div >
         );
-    } catch (error: any) {
-        return <div className="p-8 text-red-500">Error: {error.message}</div>;
+    } catch (error: unknown) {
+        return <div className="p-8 text-red-500">Error: {getErrorMessage(error)}</div>;
     }
 }
