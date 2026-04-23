@@ -31,9 +31,10 @@ export async function GET(request: NextRequest) {
         );
 
         const { accessToken, refreshToken, expiresIn } = tokenResponse;
+        const response = NextResponse.redirect(new URL("/dashboard", request.url));
 
         // Set Access Token
-        cookieStore.set(COOKIE_NAME, accessToken, {
+        response.cookies.set(COOKIE_NAME, accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
         });
 
         // Set Refresh Token (Make it last longer, e.g., 30 days)
-        cookieStore.set(REFRESH_TOKEN_COOKIE, refreshToken, {
+        response.cookies.set(REFRESH_TOKEN_COOKIE, refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
@@ -51,17 +52,17 @@ export async function GET(request: NextRequest) {
         });
 
         // Set Expiration Time
-        cookieStore.set(EXPIRES_IN_COOKIE, (Date.now() + expiresIn * 1000).toString(), {
+        response.cookies.set(EXPIRES_IN_COOKIE, (Date.now() + expiresIn * 1000).toString(), {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
             maxAge: expiresIn,
             path: "/",
         });
-        cookieStore.delete(OAUTH_STATE_COOKIE);
-        cookieStore.delete(PRIVATE_TOKEN_COOKIE);
+        response.cookies.delete(OAUTH_STATE_COOKIE);
+        response.cookies.delete(PRIVATE_TOKEN_COOKIE);
 
-        return NextResponse.redirect(new URL("/dashboard", request.url));
+        return response;
     } catch (error: unknown) {
         console.error("Error exchanging code for token:", error);
         return NextResponse.json(

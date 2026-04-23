@@ -78,7 +78,7 @@ export default function LoginPage() {
               </CardHeader>
               <CardContent className="pb-8 space-y-6">
                 <Button asChild className="w-full h-11 text-base shadow-sm hover:shadow-md transition-all">
-                  <Link href="/api/auth/login">Login with HubSpot (OAuth)</Link>
+                  <Link href="/api/auth/login" prefetch={false}>Login with HubSpot (OAuth)</Link>
                 </Button>
 
                 <PrivateTokenForm />
