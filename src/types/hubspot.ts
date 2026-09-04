@@ -117,6 +117,56 @@ export interface CustomObjectSchema {
     };
 }
 
+export interface HubSpotPropertyOption {
+    hidden: boolean;
+    displayOrder?: number;
+    description?: string;
+    label: string;
+    value: string;
+}
+
+export interface HubSpotPropertyDefinition {
+    createdUserId?: string;
+    hidden?: boolean;
+    modificationMetadata?: {
+        readOnlyOptions?: boolean;
+        readOnlyValue: boolean;
+        readOnlyDefinition: boolean;
+        archivable: boolean;
+    };
+    displayOrder?: number;
+    description: string;
+    showCurrencySymbol?: boolean;
+    label: string;
+    type: string;
+    hubspotDefined?: boolean;
+    formField?: boolean;
+    createdAt?: string;
+    archivedAt?: string;
+    archived?: boolean;
+    groupName: string;
+    referencedObjectType?: string;
+    name: string;
+    options: HubSpotPropertyOption[];
+    calculationFormula?: string;
+    hasUniqueValue?: boolean;
+    fieldType: string;
+    updatedUserId?: string;
+    calculated?: boolean;
+    externalOptions?: boolean;
+    updatedAt?: string;
+}
+
+export interface SchemaPropertyUpdateInput {
+    label: string;
+    description: string;
+    type: string;
+    fieldType: string;
+    hidden: boolean;
+    formField: boolean;
+    options: HubSpotPropertyOption[];
+}
+
 export interface MarketingEvent {
     objectId?: string;
     externalEventId?: string;

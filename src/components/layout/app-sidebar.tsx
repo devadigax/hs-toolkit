@@ -15,6 +15,7 @@ import {
     ContactRound,
     Calendar,
     ChevronRight,
+    Database,
 } from "lucide-react";
 
 import {
@@ -101,6 +102,21 @@ const links = [
     },
 ];
 
+const schemaLinks = [
+    {
+        href: "/dashboard/schema/contacts",
+        label: "Contacts",
+    },
+    {
+        href: "/dashboard/schema/companies",
+        label: "Companies",
+    },
+    {
+        href: "/dashboard/schema/deals",
+        label: "Deals",
+    },
+];
+
 export function AppSidebar({ customObjects = [] }: { customObjects?: CustomObjectSchema[] }) {
     const pathname = usePathname();
 
@@ -134,6 +150,40 @@ export function AppSidebar({ customObjects = [] }: { customObjects?: CustomObjec
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             ))}
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+
+                <SidebarGroup>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            <Collapsible defaultOpen={pathname.startsWith("/dashboard/schema")} className="group/collapsible">
+                                <SidebarMenuItem>
+                                    <CollapsibleTrigger asChild>
+                                        <SidebarMenuButton tooltip="Schema">
+                                            <Database className="h-4 w-4" />
+                                            <span>Schema</span>
+                                            <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                        </SidebarMenuButton>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <SidebarMenuSub>
+                                            {schemaLinks.map((link) => (
+                                                <SidebarMenuSubItem key={link.href}>
+                                                    <SidebarMenuSubButton
+                                                        asChild
+                                                        isActive={pathname === link.href}
+                                                    >
+                                                        <Link href={link.href}>
+                                                            <span>{link.label}</span>
+                                                        </Link>
+                                                    </SidebarMenuSubButton>
+                                                </SidebarMenuSubItem>
+                                            ))}
+                                        </SidebarMenuSub>
+                                    </CollapsibleContent>
+                                </SidebarMenuItem>
+                            </Collapsible>
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
