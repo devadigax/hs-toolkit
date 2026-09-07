@@ -29,15 +29,15 @@ export default async function TicketsPage({
             const record = ticket as HubSpotObject;
             return {
                 ...record,
-                subject: record.properties.subject || record.id,
-                content: record.properties.content || "",
-                hs_pipeline: record.properties.hs_pipeline || "",
-                hs_pipeline_stage: record.properties.hs_pipeline_stage || "",
-                hs_ticket_priority: record.properties.hs_ticket_priority || "",
-                hs_ticket_category: record.properties.hs_ticket_category || "",
+                subject: record.properties.subject ?? record.id,
+                content: record.properties.content ?? "",
+                hs_pipeline: record.properties.hs_pipeline ?? "",
+                hs_pipeline_stage: record.properties.hs_pipeline_stage ?? "",
+                hs_ticket_priority: record.properties.hs_ticket_priority ?? "",
+                hs_ticket_category: record.properties.hs_ticket_category ?? "",
                 createdAt: formatDateForDisplay(record.properties.createdate),
                 lastModifiedAt: formatDateForDisplay(record.properties.lastmodifieddate),
-                source: record.properties.hs_object_source || "-"
+                source: record.properties.hs_object_source ?? "-"
             };
         });
         const nextCursor = response.paging?.next?.after;
@@ -58,7 +58,7 @@ export default async function TicketsPage({
             <div className="flex-1 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Tickets</h2>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-wrap items-center gap-2">
                     <Search placeholder="Search tickets..." properties={allProperties} />
                         <CreateRecordDialog type="tickets" properties={allProperties} objectLabel="ticket" />
                     <RefreshObjectButton objectType="tickets" />

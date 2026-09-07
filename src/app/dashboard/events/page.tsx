@@ -29,10 +29,10 @@ export default async function MarketingEventsPage({
             const record = event as MarketingEvent;
             return {
                 id: record.objectId || record.externalEventId,
-                eventName: record.eventName || "-",
-                eventStatus: record.eventStatus || "-",
-                eventType: record.eventType || "-",
-                eventOrganizer: record.eventOrganizer || "-",
+                eventName: record.eventName ?? "-",
+                eventStatus: record.eventStatus ?? "-",
+                eventType: record.eventType ?? "-",
+                eventOrganizer: record.eventOrganizer ?? "-",
                 startDateTime: formatDateForDisplay(record.startDateTime),
                 endDateTime: formatDateForDisplay(record.endDateTime),
                 createdAt: formatDateForDisplay(record.createdAt),
@@ -57,7 +57,7 @@ export default async function MarketingEventsPage({
             <div className="flex-1 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Marketing Events</h2>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <Search placeholder="Search events..." properties={allProperties} />
                         <CreateRecordDialog type="events" triggerLabel="Create Event" />
                         <RefreshObjectButton objectType="events" />

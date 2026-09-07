@@ -52,7 +52,7 @@ export default async function GenericObjectPage({
             formatted.lastModifiedAt = formatDateValue(formatted.lastmodifieddate) ?? formatDateValue(formatted.hs_lastmodifieddate);
 
             // Format source
-            formatted.source = formatted.hs_object_source || "-";
+            formatted.source = formatted.hs_object_source ?? "-";
             return formatted;
         });
 
@@ -85,7 +85,7 @@ export default async function GenericObjectPage({
             <div className="flex-1 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight capitalize">{objectLabel}</h2>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <Search placeholder={`Search ${objectLabel}...`} properties={allProperties} />
                         <CreateRecordDialog type={type} properties={allProperties} objectLabel={schema?.labels.singular || type} />
                         <RefreshObjectButton objectType={type} />

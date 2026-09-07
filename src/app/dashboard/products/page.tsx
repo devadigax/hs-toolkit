@@ -31,15 +31,15 @@ export default async function ProductsPage({
             const record = product as HubSpotObject;
             return {
                 ...record,
-                name: record.properties.name || record.id,
-                hs_sku: record.properties.hs_sku || "",
-                description: record.properties.description || "",
-                price: record.properties.price || "",
-                hs_status: record.properties.hs_status || "",
-                hs_folder_id: record.properties.hs_folder_id || "-",
+                name: record.properties.name ?? record.id,
+                hs_sku: record.properties.hs_sku ?? "",
+                description: record.properties.description ?? "",
+                price: record.properties.price ?? "",
+                hs_status: record.properties.hs_status ?? "",
+                hs_folder_id: record.properties.hs_folder_id ?? "-",
                 createdAt: formatDateForDisplay(record.properties.createdate),
                 lastModifiedAt: formatDateForDisplay(record.properties.lastmodifieddate),
-                source: record.properties.hs_object_source || "-"
+                source: record.properties.hs_object_source ?? "-"
             };
         });
         const nextCursor = response.paging?.next?.after;
@@ -60,7 +60,7 @@ export default async function ProductsPage({
             <div className="flex-1 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Products</h2>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <Search placeholder="Search products..." properties={allProperties} />
                         <InactiveToggle />
                         <RefreshObjectButton objectType="products" />

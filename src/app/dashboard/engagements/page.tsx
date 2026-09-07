@@ -42,12 +42,12 @@ export default async function EngagementsPage({
                 ...item,
                 activityType: item.properties.hs_engagement_type,
                 subject: getSubject(item.properties),
-                hs_task_status: item.properties.hs_task_status || "-",
+                hs_task_status: item.properties.hs_task_status ?? "-",
                 formattedDate: typeof item.properties.hs_timestamp === "string" || typeof item.properties.hs_timestamp === "number"
                     ? format(new Date(item.properties.hs_timestamp), "MMM d, yyyy h:mm a")
                     : "-",
                 lastModifiedAt: formatDateForDisplay(item.properties.lastmodifieddate),
-                source: item.properties.hs_object_source || "-"
+                source: item.properties.hs_object_source ?? "-"
             };
         });
 
@@ -55,7 +55,7 @@ export default async function EngagementsPage({
             <div className="flex-1 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Engagements</h2>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <ActivityTypeFilter />
                         <Search placeholder="Search activity..." properties={allProperties} />
                     </div>

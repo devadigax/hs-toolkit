@@ -71,13 +71,15 @@ export async function copyObjectEngagements(objectType: string, sourceId: string
 
         while (hasMore) {
             const searchRequest: Record<string, unknown> = {
-                filters: [
-                    {
-                        propertyName: associationProp, // "associations.deal" etc.
-                        operator: "EQ",
-                        value: sourceId,
-                    },
-                ],
+                filterGroups: [{
+                    filters: [
+                        {
+                            propertyName: associationProp, // "associations.deal" etc.
+                            operator: "EQ",
+                            value: sourceId,
+                        },
+                    ],
+                }],
                 properties: ["hs_engagement_type"], // Fetched to determine specific type
                 limit: 100,
             };
@@ -247,13 +249,15 @@ export async function unlinkObjectEngagements(objectType: string, objectId: stri
 
             while (hasMore) {
                 const searchRequest: Record<string, unknown> = {
-                    filters: [
-                        {
-                            propertyName: associationProp,
-                            operator: "EQ",
-                            value: objectId,
-                        },
-                    ],
+                    filterGroups: [{
+                        filters: [
+                            {
+                                propertyName: associationProp,
+                                operator: "EQ",
+                                value: objectId,
+                            },
+                        ],
+                    }],
                     properties: ["hs_engagement_type"],
                     limit: 100,
                 };

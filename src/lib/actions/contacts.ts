@@ -2,6 +2,6 @@
 
 import { getObjectsByType } from "./common";
 
-export async function getContacts(limit: number = 100, after?: string, query?: string, searchField?: string) {
-    return getObjectsByType("contacts", limit, after, query, ["firstname", "lastname", "email"], searchField);
+export async function getContacts(limit: number = 100, after?: string, query?: string, searchField?: string, requestedProperties: string[] = []) {
+    return getObjectsByType("contacts", limit, after, query, ["firstname", "lastname", "email"], searchField, requestedProperties);
 }

@@ -115,7 +115,7 @@ export function CreateRecordDialog({ type, triggerLabel, properties: propList, o
                             <Label htmlFor={prop}>{formatLabel(prop)}</Label>
                             <Input
                                 id={prop}
-                                value={formData[prop] || ""}
+                                value={formData[prop] ?? ""}
                                 onChange={(e) => handleInputChange(prop, e.target.value)}
                                 placeholder={`Enter ${formatLabel(prop).toLowerCase()}`}
                             />

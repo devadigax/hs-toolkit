@@ -6,14 +6,55 @@ import { Client } from "@hubspot/api-client";
 import { getErrorMessage, serialize } from "@/lib/utils";
 import { hashString } from "@/lib/server-utils";
 import { SCHEMA_FIELD_CONFIGS, SCHEMA_OBJECT_TYPES, type SchemaObjectType } from "@/lib/schema-config";
-import type { CustomObjectSchema, HubSpotPropertyDefinition, HubSpotPropertyOption, SchemaPropertyUpdateInput } from "@/types/hubspot";
+import type {
+    CustomObjectSchema,
+    HubSpotPropertyDefinition,
+    HubSpotPropertyGroup,
+    HubSpotPropertyOption,
+    SchemaPropertyCreateInput,
+    SchemaPropertyUpdateInput,
+} from "@/types/hubspot";
 
 type PropertiesResponse = {
     results: HubSpotPropertyDefinition[];
 };
 
+type PropertyGroupsResponse = {
+    results: HubSpotPropertyGroup[];
+};
+
+type SchemaPropertyPayload = {
+    label: string;
+    description: string;
+    type: string;
+    fieldType: string;
+    hidden: boolean;
+    formField: boolean;
+    externalOptions: boolean;
+    referencedObjectType: string | undefined;
+    options?: HubSpotPropertyOption[];
+};
+
 const ENUMERATION_FIELD_TYPES = new Set(["select", "radio", "checkbox"]);
 const SCHEMA_FIELD_CONFIG_VALUES = new Set<string>(SCHEMA_FIELD_CONFIGS.map((config) => config.value));
+const PROPERTY_DEFINITION_FIELDS = [
+    "name",
+    "label",
+    "description",
+    "groupName",
+    "type",
+    "fieldType",
+    "options",
+    "hidden",
+    "formField",
+    "displayOrder",
+    "hubspotDefined",
+    "modificationMetadata",
+    "externalOptions",
+    "referencedObjectType",
+    "createdAt",
+    "updatedAt",
+].join(",");
 
 function assertSchemaObjectType(objectType: string): asserts objectType is SchemaObjectType {
     if (!SCHEMA_OBJECT_TYPES.includes(objectType as SchemaObjectType)) {
@@ -57,6 +98,38 @@ function normalizeOptions(options: HubSpotPropertyOption[]) {
         });
 }
 
+function isUserField(input: Pick<SchemaPropertyUpdateInput, "externalOptions" | "referencedObjectType">) {
+    return Boolean(input.externalOptions && input.referencedObjectType === "OWNER");
+}
+
+function getFieldConfigKey(input: Pick<SchemaPropertyUpdateInput, "type" | "fieldType" | "externalOptions" | "referencedObjectType">) {
+    return `${input.type}:${input.fieldType}${isUserField(input) ? ":OWNER" : ""}`;
+}
+
+function buildPropertyPayload(propertyName: string, input: SchemaPropertyUpdateInput): { payload: SchemaPropertyPayload; error?: never } | { error: string; payload?: never } {
+    const isEnumeration = input.type === "enumeration" || ENUMERATION_FIELD_TYPES.has(input.fieldType);
+    const isOwnerReference = isUserField(input);
+    const normalizedOptions = isEnumeration && !isOwnerReference ? normalizeOptions(input.options) : [];
+
+    if (isEnumeration && !isOwnerReference && normalizedOptions.length === 0) {
+        return { error: "Dropdown, radio, and checkbox properties need at least one option." };
+    }
+
+    return {
+        payload: {
+            label: input.label.trim() || propertyName,
+            description: input.description.trim(),
+            type: input.type,
+            fieldType: input.fieldType,
+            hidden: Boolean(input.hidden),
+            formField: isOwnerReference ? false : Boolean(input.formField),
+            externalOptions: isOwnerReference,
+            referencedObjectType: isOwnerReference ? "OWNER" : undefined,
+            ...(isEnumeration && !isOwnerReference ? { options: normalizedOptions } : {}),
+        },
+    };
+}
+
 export async function getCustomObjectSchemas() {
     const accessToken = await getAccessToken();
 
@@ -87,7 +160,7 @@ export async function getSchemaProperties(objectType: string) {
         async (token: string, type: SchemaObjectType) => {
             const hubspotClient = new Client({ accessToken: token });
             try {
-                const response = await hubspotClient.crm.properties.coreApi.getAll(type, false);
+                const response = await hubspotClient.crm.properties.coreApi.getAll(type, false, PROPERTY_DEFINITION_FIELDS);
                 const properties = serialize((response as PropertiesResponse).results);
 
                 return properties.sort((a, b) => {
@@ -112,6 +185,37 @@ export async function getSchemaProperties(objectType: string) {
     )(accessToken, objectType);
 }
 
+export async function getSchemaPropertyGroups(objectType: string) {
+    assertSchemaObjectType(objectType);
+    const accessToken = await getAccessToken();
+
+    return unstable_cache(
+        async (token: string, type: SchemaObjectType) => {
+            const hubspotClient = new Client({ accessToken: token });
+            try {
+                const response = await hubspotClient.crm.properties.groupsApi.getAll(type);
+                const groups = serialize((response as PropertyGroupsResponse).results);
+
+                return groups.sort((a, b) => {
+                    const aOrder = a.displayOrder ?? Number.MAX_SAFE_INTEGER;
+                    const bOrder = b.displayOrder ?? Number.MAX_SAFE_INTEGER;
+
+                    if (aOrder !== bOrder) return aOrder - bOrder;
+                    return a.label.localeCompare(b.label);
+                });
+            } catch (e: unknown) {
+                console.error(`Error fetching ${type} schema property groups:`, e instanceof Error ? e.message : e);
+                throw e;
+            }
+        },
+        ["schema-property-groups", objectType, hashString(accessToken)],
+        {
+            tags: [`schema-property-groups-${objectType}`],
+            revalidate: 3600,
+        }
+    )(accessToken, objectType);
+}
+
 export async function updateSchemaProperty(objectType: string, propertyName: string, input: SchemaPropertyUpdateInput) {
     assertSchemaObjectType(objectType);
 
@@ -119,46 +223,51 @@ export async function updateSchemaProperty(objectType: string, propertyName: str
         return { success: false, error: "Property name is required." };
     }
 
-    if (!SCHEMA_FIELD_CONFIG_VALUES.has(`${input.type}:${input.fieldType}`)) {
+    if (!SCHEMA_FIELD_CONFIG_VALUES.has(getFieldConfigKey(input))) {
         return { success: false, error: "Unsupported property type selected." };
     }
 
     try {
         const hubspotClient = new Client({ accessToken: await getAccessToken() });
         const existingProperty = serialize(
-            await hubspotClient.crm.properties.coreApi.getByName(objectType, propertyName, false)
+            await hubspotClient.crm.properties.coreApi.getByName(objectType, propertyName, false, PROPERTY_DEFINITION_FIELDS)
         ) as HubSpotPropertyDefinition;
 
         if (existingProperty.modificationMetadata?.readOnlyDefinition) {
             return { success: false, error: "HubSpot marks this property definition as read-only." };
         }
 
-        const isEnumeration = input.type === "enumeration" || ENUMERATION_FIELD_TYPES.has(input.fieldType);
-        const areOptionsReadOnly = Boolean(existingProperty.modificationMetadata?.readOnlyOptions || existingProperty.externalOptions);
-        const normalizedOptions = isEnumeration
-            ? areOptionsReadOnly
-                ? normalizeOptions(existingProperty.options ?? [])
-                : normalizeOptions(input.options)
-            : [];
-
-        if (isEnumeration && normalizedOptions.length === 0) {
-            return { success: false, error: "Dropdown, radio, and checkbox properties need at least one option." };
+        if (isUserField(input) && !isUserField(existingProperty)) {
+            return {
+                success: false,
+                error: "HubSpot User fields can be created as new fields, but this API does not support converting an existing property into one.",
+            };
         }
 
-        const propertyUpdate = {
-            label: input.label.trim() || propertyName,
-            description: input.description.trim(),
-            type: input.type,
-            fieldType: input.fieldType,
-            hidden: Boolean(input.hidden),
-            formField: Boolean(input.formField),
-            ...(isEnumeration ? { options: normalizedOptions } : {}),
+        const areOptionsReadOnly = Boolean(existingProperty.modificationMetadata?.readOnlyOptions || existingProperty.externalOptions);
+        const propertyPayload = buildPropertyPayload(
+            propertyName,
+            areOptionsReadOnly ? { ...input, options: existingProperty.options ?? [] } : input
+        );
+
+        if (!propertyPayload.payload) {
+            return { success: false, error: propertyPayload.error };
+        }
+        const payload = propertyPayload.payload;
+        const updatePayload = {
+            label: payload.label,
+            description: payload.description,
+            type: payload.type,
+            fieldType: payload.fieldType,
+            hidden: payload.hidden,
+            formField: payload.formField,
+            ...(payload.options ? { options: payload.options } : {}),
         };
 
         const response = await hubspotClient.crm.properties.coreApi.update(
             objectType,
             propertyName,
-            propertyUpdate as Parameters<typeof hubspotClient.crm.properties.coreApi.update>[2]
+            updatePayload as Parameters<typeof hubspotClient.crm.properties.coreApi.update>[2]
         );
 
         updateTag(`schema-properties-${objectType}`);
@@ -168,6 +277,56 @@ export async function updateSchemaProperty(objectType: string, propertyName: str
         return { success: true, data: serialize(response as HubSpotPropertyDefinition) };
     } catch (error: unknown) {
         console.error(`Error updating ${objectType} property ${propertyName}:`, error);
+        return { success: false, error: getErrorMessage(error) };
+    }
+}
+
+export async function createSchemaProperty(objectType: string, input: SchemaPropertyCreateInput) {
+    assertSchemaObjectType(objectType);
+
+    const name = input.name.trim();
+    const groupName = input.groupName.trim();
+
+    if (!name) {
+        return { success: false, error: "Internal name is required." };
+    }
+
+    if (!/^[a-z][a-z0-9_]*$/.test(name)) {
+        return { success: false, error: "Internal name must start with a lowercase letter and use only lowercase letters, numbers, and underscores." };
+    }
+
+    if (!groupName) {
+        return { success: false, error: "Property group is required." };
+    }
+
+    if (!SCHEMA_FIELD_CONFIG_VALUES.has(getFieldConfigKey(input))) {
+        return { success: false, error: "Unsupported property type selected." };
+    }
+
+    const propertyPayload = buildPropertyPayload(name, input);
+
+    if (!propertyPayload.payload) {
+        return { success: false, error: propertyPayload.error };
+    }
+
+    try {
+        const hubspotClient = new Client({ accessToken: await getAccessToken() });
+        const response = await hubspotClient.crm.properties.coreApi.create(
+            objectType,
+            {
+                ...propertyPayload.payload,
+                name,
+                groupName,
+            } as Parameters<typeof hubspotClient.crm.properties.coreApi.create>[1]
+        );
+
+        updateTag(`schema-properties-${objectType}`);
+        updateTag("properties");
+        revalidatePath(`/dashboard/schema/${objectType}`);
+
+        return { success: true, data: serialize(response as HubSpotPropertyDefinition) };
+    } catch (error: unknown) {
+        console.error(`Error creating ${objectType} property ${name}:`, error);
         return { success: false, error: getErrorMessage(error) };
     }
 }

@@ -165,6 +165,19 @@ export interface SchemaPropertyUpdateInput {
     hidden: boolean;
     formField: boolean;
     options: HubSpotPropertyOption[];
+    externalOptions?: boolean;
+    referencedObjectType?: string;
+}
+
+export interface HubSpotPropertyGroup {
+    name: string;
+    label: string;
+    displayOrder?: number;
+}
+
+export interface SchemaPropertyCreateInput extends SchemaPropertyUpdateInput {
+    name: string;
+    groupName: string;
 }
 
 export interface MarketingEvent {

@@ -19,11 +19,19 @@ export async function getDashboardStats() {
             filterGroups: [],
         };
 
-        const contactsCount = await hubspotClient.crm.contacts.searchApi.doSearch(searchRequest).then((response) => response.total).catch(() => 0);
-        const companiesCount = await hubspotClient.crm.companies.searchApi.doSearch(searchRequest).then((response) => response.total).catch(() => 0);
-        const dealsCount = await hubspotClient.crm.deals.searchApi.doSearch(searchRequest).then((response) => response.total).catch(() => 0);
-        const ticketsCount = await hubspotClient.crm.tickets.searchApi.doSearch(searchRequest).then((response) => response.total).catch(() => 0);
-        const productsCount = await hubspotClient.crm.products.searchApi.doSearch(searchRequest).then((response) => response.total).catch(() => 0);
+        const [
+            contactsCount,
+            companiesCount,
+            dealsCount,
+            ticketsCount,
+            productsCount,
+        ] = await Promise.all([
+            hubspotClient.crm.contacts.searchApi.doSearch(searchRequest).then((response) => response.total).catch(() => 0),
+            hubspotClient.crm.companies.searchApi.doSearch(searchRequest).then((response) => response.total).catch(() => 0),
+            hubspotClient.crm.deals.searchApi.doSearch(searchRequest).then((response) => response.total).catch(() => 0),
+            hubspotClient.crm.tickets.searchApi.doSearch(searchRequest).then((response) => response.total).catch(() => 0),
+            hubspotClient.crm.products.searchApi.doSearch(searchRequest).then((response) => response.total).catch(() => 0),
+        ]);
 
         return {
             counts: {

@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 import { SchemaPropertiesTable } from "@/components/dashboard/schema-properties-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getSchemaProperties } from "@/lib/actions";
+import { getSchemaProperties, getSchemaPropertyGroups } from "@/lib/actions";
 import { SCHEMA_OBJECT_TYPES } from "@/lib/schema-config";
 import { cn, getErrorMessage } from "@/lib/utils";
-import type { HubSpotPropertyDefinition } from "@/types/hubspot";
+import type { HubSpotPropertyDefinition, HubSpotPropertyGroup } from "@/types/hubspot";
 
 const OBJECT_LABELS: Record<string, string> = {
     contacts: "Contacts",
@@ -28,10 +28,14 @@ export default async function ObjectSchemaPage({
     }
 
     let properties: HubSpotPropertyDefinition[] = [];
+    let groups: HubSpotPropertyGroup[] = [];
     let errorMessage = "";
 
     try {
-        properties = await getSchemaProperties(objectType);
+        [properties, groups] = await Promise.all([
+            getSchemaProperties(objectType),
+            getSchemaPropertyGroups(objectType),
+        ]);
     } catch (error: unknown) {
         errorMessage = getErrorMessage(error);
     }
@@ -76,7 +80,7 @@ export default async function ObjectSchemaPage({
 
             <Card>
                 <CardContent className="pt-6">
-                    <SchemaPropertiesTable objectType={objectType} properties={properties} />
+                    <SchemaPropertiesTable objectType={objectType} properties={properties} groups={groups} />
                 </CardContent>
             </Card>
         </div>

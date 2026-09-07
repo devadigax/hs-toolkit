@@ -43,16 +43,16 @@ export default async function LineItemsPage({
             return {
                 ...record,
                 associationsSummary: associationSummary || "None",
-                name: record.properties.name || record.id,
-                hs_sku: record.properties.hs_sku || "",
-                description: record.properties.description || "",
-                price: record.properties.price || "",
-                quantity: record.properties.quantity || "",
-                amount: record.properties.amount || "",
-                discount: record.properties.discount || "",
+                name: record.properties.name ?? record.id,
+                hs_sku: record.properties.hs_sku ?? "",
+                description: record.properties.description ?? "",
+                price: record.properties.price ?? "",
+                quantity: record.properties.quantity ?? "",
+                amount: record.properties.amount ?? "",
+                discount: record.properties.discount ?? "",
                 createdAt: formatDateForDisplay(record.properties.createdate),
                 lastModifiedAt: formatDateForDisplay(record.properties.lastmodifieddate),
-                source: record.properties.hs_object_source || "-"
+                source: record.properties.hs_object_source ?? "-"
             };
         });
 
@@ -76,7 +76,7 @@ export default async function LineItemsPage({
             <div className="flex-1 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Line Items</h2>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-wrap items-center gap-2">
                     <Search placeholder="Search line items..." properties={allProperties} />
                     <RefreshObjectButton objectType="line-items" />
                     <DeletedRecordsView objectType="line-items" />

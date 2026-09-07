@@ -53,6 +53,10 @@ export interface SearchCapableApi {
     doSearch(request: HubSpotSearchRequest): Promise<SearchResponse>;
 }
 
+function mergeProperties(baseProperties: string[], requestedProperties: string[] = []) {
+    return Array.from(new Set([...baseProperties, ...requestedProperties.filter(Boolean)]));
+}
+
 export async function searchObjects(
     api: SearchCapableApi,
     properties: readonly string[], // readonly to match OBJECT_PROPERTIES types
@@ -120,14 +124,22 @@ function getApiForType(client: Client, type: string) {
     };
 }
 
-export async function getObjectsByType(type: keyof typeof OBJECT_PROPERTIES, limit: number, after?: string, query?: string, queryProps?: string[], searchField?: string) {
+export async function getObjectsByType(
+    type: keyof typeof OBJECT_PROPERTIES,
+    limit: number,
+    after?: string,
+    query?: string,
+    queryProps?: string[],
+    searchField?: string,
+    requestedProperties: string[] = []
+) {
     if (type === "events") {
         const { getMarketingEvents } = await import("./events");
         return getMarketingEvents(limit, after);
     }
 
     // Use cache if it's the first page (no after cursor) and no search query
-    if (!after && !query) {
+    if (!after && !query && requestedProperties.length === 0) {
         try {
             return await getCachedFirstPage(type, limit);
         } catch (e) {
@@ -139,8 +151,8 @@ export async function getObjectsByType(type: keyof typeof OBJECT_PROPERTIES, lim
 
     const objProps = OBJECT_PROPERTIES[type as keyof typeof OBJECT_PROPERTIES];
     const properties: string[] = objProps
-        ? [...objProps]
-        : await getAllProperties(type).then(props => props.slice(0, 50));
+        ? mergeProperties([...objProps], requestedProperties)
+        : await getAllProperties(type).then(props => mergeProperties(props.slice(0, 50), requestedProperties));
 
     // Ensure the searched field is returned in the properties list
     if (searchField && searchField !== "all" && !properties.includes(searchField)) {

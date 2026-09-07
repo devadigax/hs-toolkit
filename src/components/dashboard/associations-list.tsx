@@ -12,7 +12,7 @@ interface AssociationsListProps {
 }
 
 function getObjectName(item: HubSpotAssociationResult, type: string) {
-    if (type === "contacts") return item.firstname ? `${item.firstname} ${item.lastname || ""}` : item.email;
+    if (type === "contacts") return item.firstname ? `${item.firstname} ${item.lastname ?? ""}` : item.email;
     if (type === "companies") return item.name;
     if (type === "deals") return item.dealname || item.name;
     if (type === "tickets") return item.subject;
