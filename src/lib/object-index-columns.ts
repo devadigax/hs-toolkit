@@ -4,6 +4,7 @@ export type ObjectIndexColumn = {
     header: string;
     accessorKey: string;
     hiddenByDefault?: boolean;
+    alwaysVisible?: boolean;
     width?: number;
 };
 

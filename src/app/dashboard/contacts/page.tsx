@@ -56,7 +56,7 @@ export default async function ContactsPage({
 
         const columns = buildSchemaIndexColumns({
             schemaProperties,
-            leadingColumns: [{ header: "Name", accessorKey: "fullName", width: 260 }],
+            leadingColumns: [{ header: "Name", accessorKey: "fullName", alwaysVisible: true, width: 260 }],
             trailingColumns: [
                 { header: "Created At", accessorKey: "createdAt" },
                 { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
@@ -70,12 +70,12 @@ export default async function ContactsPage({
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Contacts</h2>
                     <div className="flex flex-wrap items-center gap-2">
-                    <Search placeholder="Search contacts..." properties={getSchemaPropertyNames(schemaProperties)} />
-                    <CreateRecordDialog type="contacts" />
-                    <SchemaLinkButton objectType="contacts" />
-                    <RefreshObjectButton objectType="contacts" />
-                    <DeletedRecordsView objectType="contacts" />
-                </div>
+                        <Search placeholder="Search contacts..." properties={getSchemaPropertyNames(schemaProperties)} />
+                        <CreateRecordDialog type="contacts" />
+                        <SchemaLinkButton objectType="contacts" />
+                        <RefreshObjectButton objectType="contacts" />
+                        <DeletedRecordsView objectType="contacts" />
+                    </div>
                 </div>
                 <Card>
                     <CardContent className="pt-6">

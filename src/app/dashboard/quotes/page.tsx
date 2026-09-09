@@ -47,7 +47,9 @@ export default async function QuotesPage({
         const schemaPropertyNames = getSchemaPropertyNames(schemaProperties);
         const columns = buildSchemaIndexColumns({
             schemaProperties,
-            leadingColumns: [],
+            leadingColumns: [
+                { header: "Quote Title", accessorKey: "hs_title", alwaysVisible: true, width: 260 },
+            ],
             trailingColumns: [
                 { header: "Expiration Date", accessorKey: "hs_expiration_date", hiddenByDefault: true },
                 { header: "Created At", accessorKey: "createdAt" },
@@ -74,6 +76,7 @@ export default async function QuotesPage({
                             title="All Quotes"
                             data={quotes}
                             columns={columns}
+                            clickableColumn="hs_title"
                             syncColumnVisibility
                             selectedColumnKeys={selectedColumnKeys}
                         />

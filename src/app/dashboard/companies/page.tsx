@@ -52,7 +52,9 @@ export default async function CompaniesPage({
 
         const columns = buildSchemaIndexColumns({
             schemaProperties,
-            leadingColumns: [],
+            leadingColumns: [
+                { header: "Company Name", accessorKey: "name", alwaysVisible: true, width: 260 },
+            ],
             trailingColumns: [
                 { header: "Created At", accessorKey: "createdAt" },
                 { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
@@ -66,12 +68,12 @@ export default async function CompaniesPage({
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Companies</h2>
                     <div className="flex flex-wrap items-center gap-2">
-                    <Search placeholder="Search companies..." properties={getSchemaPropertyNames(schemaProperties)} />
-                    <CreateRecordDialog type="companies" />
-                    <SchemaLinkButton objectType="companies" />
-                    <RefreshObjectButton objectType="companies" />
-                    <DeletedRecordsView objectType="companies" />
-                </div>
+                        <Search placeholder="Search companies..." properties={getSchemaPropertyNames(schemaProperties)} />
+                        <CreateRecordDialog type="companies" />
+                        <SchemaLinkButton objectType="companies" />
+                        <RefreshObjectButton objectType="companies" />
+                        <DeletedRecordsView objectType="companies" />
+                    </div>
                 </div>
                 <Card>
                     <CardContent className="pt-6">
@@ -79,6 +81,7 @@ export default async function CompaniesPage({
                             title="All Companies"
                             data={companies}
                             columns={columns}
+                            clickableColumn="name"
                             syncColumnVisibility
                             selectedColumnKeys={selectedColumnKeys}
                         />

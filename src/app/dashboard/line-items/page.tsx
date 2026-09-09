@@ -65,7 +65,9 @@ export default async function LineItemsPage({
 
         const columns = buildSchemaIndexColumns({
             schemaProperties,
-            leadingColumns: [],
+            leadingColumns: [
+                { header: "Line Name", accessorKey: "name", alwaysVisible: true, width: 260 },
+            ],
             trailingColumns: [
                 { header: "Associations", accessorKey: "associationsSummary", hiddenByDefault: true },
                 { header: "Created At", accessorKey: "createdAt" },
@@ -92,6 +94,7 @@ export default async function LineItemsPage({
                             title="All Line Items"
                             data={lineItems}
                             columns={columns}
+                            clickableColumn="name"
                             syncColumnVisibility
                             selectedColumnKeys={selectedColumnKeys}
                         />

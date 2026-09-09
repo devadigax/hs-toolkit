@@ -43,7 +43,7 @@ export default async function MarketingEventsPage({
         const nextCursor = response.paging?.next?.after;
 
         const columns = [
-            { header: "Event Name", accessorKey: "eventName" },
+            { header: "Event Name", accessorKey: "eventName", alwaysVisible: true, width: 260 },
             { header: "Status", accessorKey: "eventStatus" },
             { header: "Type", accessorKey: "eventType" },
             { header: "Organizer", accessorKey: "eventOrganizer" },

@@ -51,7 +51,9 @@ export default async function ProductsPage({
 
         const columns = buildSchemaIndexColumns({
             schemaProperties,
-            leadingColumns: [],
+            leadingColumns: [
+                { header: "Product Name", accessorKey: "name", alwaysVisible: true, width: 260 },
+            ],
             trailingColumns: [
                 { header: "Created At", accessorKey: "createdAt" },
                 { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
@@ -78,6 +80,7 @@ export default async function ProductsPage({
                             title="All Products"
                             data={products}
                             columns={columns}
+                            clickableColumn="name"
                             syncColumnVisibility
                             selectedColumnKeys={selectedColumnKeys}
                         />

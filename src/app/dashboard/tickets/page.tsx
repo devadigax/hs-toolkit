@@ -50,7 +50,9 @@ export default async function TicketsPage({
         const schemaPropertyNames = getSchemaPropertyNames(schemaProperties);
         const columns = buildSchemaIndexColumns({
             schemaProperties,
-            leadingColumns: [],
+            leadingColumns: [
+                { header: "Ticket Name", accessorKey: "subject", alwaysVisible: true, width: 260 },
+            ],
             trailingColumns: [
                 { header: "Created At", accessorKey: "createdAt" },
                 { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
@@ -77,6 +79,7 @@ export default async function TicketsPage({
                             title="All Tickets"
                             data={tickets}
                             columns={columns}
+                            clickableColumn="subject"
                             syncColumnVisibility
                             selectedColumnKeys={selectedColumnKeys}
                         />

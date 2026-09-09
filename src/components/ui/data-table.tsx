@@ -25,6 +25,7 @@ interface Column {
     header: string;
     accessorKey: string;
     hiddenByDefault?: boolean;
+    alwaysVisible?: boolean;
     cell?: (row: TableRowData) => React.ReactNode;
     width?: number;
 }
@@ -74,7 +75,7 @@ export function DataTable({
         const initialVisibility: Record<string, boolean> = {};
         const selectedSet = selectedColumnKeys ? new Set(selectedColumnKeys) : null;
         columns.forEach(col => {
-            initialVisibility[col.accessorKey] = selectedSet ? selectedSet.has(col.accessorKey) : !col.hiddenByDefault;
+            initialVisibility[col.accessorKey] = col.alwaysVisible || (selectedSet ? selectedSet.has(col.accessorKey) : !col.hiddenByDefault);
         });
         return initialVisibility;
     });
@@ -121,6 +122,8 @@ export function DataTable({
     };
 
     const setColumnVisibility = (accessorKey: string, isVisible: boolean) => {
+        if (columns.find((column) => column.accessorKey === accessorKey)?.alwaysVisible) return;
+
         const visibleCount = Object.values(visibleColumns).filter(Boolean).length;
         if (!isVisible && visibleCount <= 1) return;
 
@@ -134,7 +137,7 @@ export function DataTable({
         if (syncColumnVisibility) {
             const params = new URLSearchParams(searchParams);
             const visibleKeys = columns
-                .filter((column) => nextVisibility[column.accessorKey])
+                .filter((column) => nextVisibility[column.accessorKey] && !column.alwaysVisible)
                 .map((column) => column.accessorKey);
 
             if (visibleKeys.length > 0) {
@@ -173,13 +176,14 @@ export function DataTable({
                         {filteredColumns.map((column) => {
                             const isOnlyVisibleColumn = Boolean(visibleColumns[column.accessorKey])
                                 && Object.values(visibleColumns).filter(Boolean).length <= 1;
+                            const isLockedColumn = Boolean(column.alwaysVisible);
 
                             return (
                                 <DropdownMenuCheckboxItem
                                     key={column.accessorKey}
                                     className="capitalize"
                                     checked={visibleColumns[column.accessorKey]}
-                                    disabled={isOnlyVisibleColumn}
+                                    disabled={isLockedColumn || isOnlyVisibleColumn}
                                     onCheckedChange={(value) => setColumnVisibility(column.accessorKey, !!value)}
                                 >
                                     {column.header}

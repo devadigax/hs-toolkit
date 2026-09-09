@@ -49,7 +49,9 @@ export default async function DealsPage({
 
         const columns = buildSchemaIndexColumns({
             schemaProperties,
-            leadingColumns: [],
+            leadingColumns: [
+                { header: "Deal Name", accessorKey: "dealname", alwaysVisible: true, width: 260 },
+            ],
             trailingColumns: [
                 { header: "Close Date", accessorKey: "closeDate", hiddenByDefault: true },
                 { header: "Created At", accessorKey: "createdAt" },
@@ -64,12 +66,12 @@ export default async function DealsPage({
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Deals</h2>
                     <div className="flex flex-wrap items-center gap-2">
-                    <Search placeholder="Search deals..." properties={getSchemaPropertyNames(schemaProperties)} />
-                    <CreateRecordDialog type="deals" />
-                    <SchemaLinkButton objectType="deals" />
-                    <RefreshObjectButton objectType="deals" />
-                    <DeletedRecordsView objectType="deals" />
-                </div>
+                        <Search placeholder="Search deals..." properties={getSchemaPropertyNames(schemaProperties)} />
+                        <CreateRecordDialog type="deals" />
+                        <SchemaLinkButton objectType="deals" />
+                        <RefreshObjectButton objectType="deals" />
+                        <DeletedRecordsView objectType="deals" />
+                    </div>
                 </div>
                 <Card>
                     <CardContent className="pt-6">
@@ -77,6 +79,7 @@ export default async function DealsPage({
                             title="All Deals"
                             data={deals}
                             columns={columns}
+                            clickableColumn="dealname"
                             syncColumnVisibility
                             selectedColumnKeys={selectedColumnKeys}
                         />

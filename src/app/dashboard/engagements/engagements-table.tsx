@@ -3,7 +3,6 @@
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
 import type { TableRowData } from "@/components/ui/data-table";
 import type { VariantProps } from "class-variance-authority";
 import type { badgeVariants } from "@/components/ui/badge";
@@ -26,6 +25,7 @@ const getTypeColor = (type: string): BadgeVariant => {
 };
 
 const columns = [
+    { header: "Subject / Body", accessorKey: "subject", alwaysVisible: true, width: 300 },
     {
         header: "Activity Type",
         accessorKey: "activityType",
@@ -36,15 +36,6 @@ const columns = [
         )
     },
     { header: "Date", accessorKey: "formattedDate" },
-    {
-        header: "Subject / Body",
-        accessorKey: "subject",
-        cell: (row: TableRowData) => (
-            <Link href={`/dashboard/engagements/${row.id}`} className="hover:underline font-medium text-blue-600 dark:text-blue-400">
-                {String(row.subject ?? "")}
-            </Link>
-        )
-    },
     { header: "Task Status", accessorKey: "hs_task_status", hiddenByDefault: true },
     { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
     { header: "Source", accessorKey: "source", hiddenByDefault: true }

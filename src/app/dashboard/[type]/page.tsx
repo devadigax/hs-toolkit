@@ -60,11 +60,17 @@ export default async function GenericObjectPage({
         const nextCursor = response.paging?.next?.after;
 
         // Build generic columns based on properties returned
-        const columns = [];
+        const columns: Array<{
+            header: string;
+            accessorKey: string;
+            hiddenByDefault?: boolean;
+            alwaysVisible?: boolean;
+            width?: number;
+        }> = [];
         if (primaryProperty) {
-            columns.push({ header: primaryProperty, accessorKey: primaryProperty });
+            columns.push({ header: primaryProperty, accessorKey: primaryProperty, alwaysVisible: true, width: 260 });
         } else {
-            columns.push({ header: "ID", accessorKey: "id" });
+            columns.push({ header: "ID", accessorKey: "id", alwaysVisible: true, width: 220 });
         }
 
         // Add up to 5 properties to list
