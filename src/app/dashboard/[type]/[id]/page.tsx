@@ -1,12 +1,9 @@
 import { PropertyGrid } from "@/components/dashboard/property-grid";
 import { AssociationsList } from "@/components/dashboard/associations-list";
-import { getObject, getCustomObjectSchemas } from "@/lib/actions";
+import { getObject, getCustomObjectSchemas, getObjectPropertyDefinitions } from "@/lib/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { getErrorMessage } from "@/lib/utils";
-import type { CustomObjectSchema, HubSpotAssociationCollection, HubSpotObject } from "@/types/hubspot";
+import type { CustomObjectSchema, HubSpotAssociationCollection, HubSpotObject, HubSpotPropertyDefinition } from "@/types/hubspot";
 
 function renderErrorState(type: string, id: string, message: string) {
     return (
@@ -14,11 +11,6 @@ function renderErrorState(type: string, id: string, message: string) {
             <h2 className="text-xl font-bold mb-2">Error loading {type}</h2>
             <p>ID: {id}</p>
             <p className="mt-2">Details: {message}</p>
-            <div className="mt-4">
-                <Button variant="outline" asChild>
-                    <Link href={`/dashboard/${type}`}>Back to List</Link>
-                </Button>
-            </div>
         </div>
     );
 }
@@ -34,12 +26,14 @@ export default async function ObjectPage({
     const { type, id } = await params;
     let object: HubSpotObject;
     let schemas: CustomObjectSchema[];
+    let propertyDefinitions: HubSpotPropertyDefinition[];
 
     try {
-        [object, schemas] = await Promise.all([
+        [object, schemas, propertyDefinitions] = await Promise.all([
             getObject(type, id),
-            getCustomObjectSchemas()
-        ]) as [HubSpotObject, CustomObjectSchema[]];
+            getCustomObjectSchemas(),
+            getObjectPropertyDefinitions(type),
+        ]) as [HubSpotObject, CustomObjectSchema[], HubSpotPropertyDefinition[]];
     } catch (error: unknown) {
         return renderErrorState(type, id, getErrorMessage(error));
     }
@@ -66,14 +60,6 @@ export default async function ObjectPage({
 
     return (
         <div className="flex-1 space-y-4">
-            <div className="flex items-center space-x-2 mb-4">
-                <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/dashboard/${type}`}>
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to {schema ? schema.labels.plural : type}
-                    </Link>
-                </Button>
-            </div>
             <div className="flex items-center justify-between space-y-2">
                 <h2 className="text-3xl font-bold tracking-tight capitalize">
                     {singularLabel} Details
@@ -85,7 +71,12 @@ export default async function ObjectPage({
                         <CardTitle>Properties</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <PropertyGrid properties={properties} type={type} id={id} />
+                        <PropertyGrid
+                            properties={properties}
+                            propertyDefinitions={propertyDefinitions}
+                            type={type}
+                            id={id}
+                        />
                     </CardContent>
                 </Card>
 

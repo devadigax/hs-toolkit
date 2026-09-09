@@ -1,23 +1,23 @@
-import { getObject } from "@/lib/actions";
+import { getObject, getObjectPropertyDefinitions } from "@/lib/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AssociationsList } from "@/components/dashboard/associations-list";
 import { PropertyGrid } from "@/components/dashboard/property-grid";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import type { VariantProps } from "class-variance-authority";
 import type { badgeVariants } from "@/components/ui/badge";
-import type { HubSpotObject, HubSpotAssociationCollection } from "@/types/hubspot";
+import type { HubSpotObject, HubSpotAssociationCollection, HubSpotPropertyDefinition } from "@/types/hubspot";
 
 type BadgeVariant = VariantProps<typeof badgeVariants>["variant"];
 type EngagementProperties = Record<string, string | number | boolean | null | undefined>;
 
 export default async function EngagementPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const engagement = await getObject("engagements", id);
+    const [engagement, propertyDefinitions] = await Promise.all([
+        getObject("engagements", id),
+        getObjectPropertyDefinitions("engagements"),
+    ]) as [HubSpotObject, HubSpotPropertyDefinition[]];
 
     if (!engagement) {
         return <div>Engagement not found</div>;
@@ -64,12 +64,7 @@ export default async function EngagementPage({ params }: { params: Promise<{ id:
 
     return (
         <div className="flex-1 space-y-4">
-            <div className="flex items-center space-x-4 mb-4">
-                <Button variant="ghost" size="icon" asChild>
-                    <Link href="/dashboard/engagements">
-                        <ArrowLeft className="h-4 w-4" />
-                    </Link>
-                </Button>
+            <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
                     <h2 className="text-3xl font-bold tracking-tight">
                         {getSubject(properties)}
@@ -117,7 +112,12 @@ export default async function EngagementPage({ params }: { params: Promise<{ id:
                             <CardTitle>Properties</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <PropertyGrid properties={properties} type="engagements" id={id} />
+                            <PropertyGrid
+                                properties={properties}
+                                propertyDefinitions={propertyDefinitions}
+                                type="engagements"
+                                id={id}
+                            />
                         </CardContent>
                     </Card>
                 </div>

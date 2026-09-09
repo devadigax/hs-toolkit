@@ -7,7 +7,7 @@ import { getErrorMessage, serialize } from "@/lib/utils";
 import { OBJECT_PROPERTIES, ASSOCIATION_MAP, DEFAULT_SORT } from "./config";
 import { mergeProperties } from "./property-utils";
 import { hashString } from "@/lib/server-utils";
-import type { FilterGroup, Sort, HubSpotSearchRequest, HubSpotObject, HubSpotAssociation, HubSpotAssociationCollection, HubSpotAssociationResult } from "@/types/hubspot";
+import type { FilterGroup, Sort, HubSpotSearchRequest, HubSpotObject, HubSpotAssociation, HubSpotAssociationCollection, HubSpotAssociationResult, HubSpotPropertyDefinition } from "@/types/hubspot";
 
 type SearchResponse = {
     results: HubSpotObject[];
@@ -43,6 +43,54 @@ type V4AssociationReadResponse = {
 type ObjectPropertiesResponse = {
     results: Array<{ name: string }>;
 };
+
+type PropertyDefinitionsResponse = {
+    results: HubSpotPropertyDefinition[];
+};
+
+const PROPERTY_DEFINITION_FIELDS = [
+    "name",
+    "label",
+    "description",
+    "groupName",
+    "type",
+    "fieldType",
+    "options",
+    "hidden",
+    "formField",
+    "displayOrder",
+    "hubspotDefined",
+    "modificationMetadata",
+    "externalOptions",
+    "referencedObjectType",
+    "createdAt",
+    "updatedAt",
+].join(",");
+
+function getPropertiesApiObjectType(type: string) {
+    if (type === "line-items") return "line_items";
+    return type;
+}
+
+function createSyntheticPropertyDefinition(name: string, patch: Partial<HubSpotPropertyDefinition> = {}): HubSpotPropertyDefinition {
+    return {
+        name,
+        label: patch.label ?? name,
+        description: patch.description ?? "",
+        groupName: patch.groupName ?? "default",
+        type: patch.type ?? "string",
+        fieldType: patch.fieldType ?? "text",
+        options: patch.options ?? [],
+        hidden: patch.hidden ?? false,
+        displayOrder: patch.displayOrder,
+        modificationMetadata: patch.modificationMetadata ?? {
+            readOnlyValue: false,
+            readOnlyDefinition: false,
+            readOnlyOptions: false,
+            archivable: false,
+        },
+    };
+}
 
 type ObjectApiGroup = {
     basicApi: BasicCapableApi;
@@ -273,6 +321,60 @@ export async function getAllProperties(type: string): Promise<string[]> {
         }
     }, ['all-properties', type, hashString(accessToken)], { tags: ['properties'] })(accessToken);
 } // Note: We might want to scope this too if properties vary by user, but usually schema is account-wide. Safer to scope it anyway.
+
+export async function getObjectPropertyDefinitions(type: string): Promise<HubSpotPropertyDefinition[]> {
+    if (type === "events") {
+        return [
+            createSyntheticPropertyDefinition("eventName", { label: "Event Name", displayOrder: 0 }),
+            createSyntheticPropertyDefinition("eventDescription", { label: "Event Description", fieldType: "textarea", displayOrder: 1 }),
+            createSyntheticPropertyDefinition("eventOrganizer", { label: "Event Organizer", displayOrder: 2 }),
+            createSyntheticPropertyDefinition("eventType", { label: "Event Type", displayOrder: 3 }),
+            createSyntheticPropertyDefinition("eventStatus", { label: "Event Status", displayOrder: 4 }),
+            createSyntheticPropertyDefinition("startDateTime", { label: "Start Date", type: "datetime", fieldType: "date", displayOrder: 5 }),
+            createSyntheticPropertyDefinition("endDateTime", { label: "End Date", type: "datetime", fieldType: "date", displayOrder: 6 }),
+            createSyntheticPropertyDefinition("externalEventId", { label: "External Event ID", displayOrder: 7 }),
+            createSyntheticPropertyDefinition("externalAccountId", { label: "External Account ID", displayOrder: 8 }),
+            createSyntheticPropertyDefinition("createdAt", {
+                label: "Created At",
+                type: "datetime",
+                fieldType: "date",
+                displayOrder: 9,
+                modificationMetadata: {
+                    readOnlyValue: true,
+                    readOnlyDefinition: true,
+                    readOnlyOptions: true,
+                    archivable: false,
+                },
+            }),
+        ];
+    }
+
+    const accessToken = await getAccessToken();
+
+    return unstable_cache(async (token: string, objectType: string) => {
+        const hubspotClient = new Client({ accessToken: token });
+        const apiObjectType = getPropertiesApiObjectType(objectType);
+
+        try {
+            const response = await hubspotClient.crm.properties.coreApi.getAll(apiObjectType, false, PROPERTY_DEFINITION_FIELDS);
+            const definitions = serialize((response as PropertyDefinitionsResponse).results);
+
+            return definitions.sort((a, b) => {
+                const aOrder = a.displayOrder ?? Number.MAX_SAFE_INTEGER;
+                const bOrder = b.displayOrder ?? Number.MAX_SAFE_INTEGER;
+
+                if (a.groupName !== b.groupName) return a.groupName.localeCompare(b.groupName);
+                if (aOrder !== bOrder) return aOrder - bOrder;
+
+                return a.label.localeCompare(b.label);
+            });
+        } catch (e) {
+            console.error("Error fetching property definitions for " + objectType, e);
+            const fallbackProperties = OBJECT_PROPERTIES[objectType as keyof typeof OBJECT_PROPERTIES] ?? [];
+            return fallbackProperties.map((propertyName, index) => createSyntheticPropertyDefinition(propertyName, { displayOrder: index }));
+        }
+    }, ["property-definitions", type, hashString(accessToken)], { tags: ["properties", `schema-properties-${type}`] })(accessToken, type);
+}
 
 
 export async function getObject(type: string, id: string) {

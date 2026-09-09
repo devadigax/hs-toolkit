@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { History } from "lucide-react";
 import { getPropertyHistory } from "@/lib/actions";
+import type { HubSpotPropertyDefinition } from "@/types/hubspot";
 
 interface PropertyHistoryEntry {
     timestamp: string;
@@ -21,13 +22,14 @@ interface PropertyHistoryEntry {
 
 interface PropertyItemProps {
     label: string;
-    value: string | number | null | undefined;
+    value: string | number | boolean | null | undefined;
     type: string;
     id: string;
     propertyKey: string;
+    propertyDefinition?: HubSpotPropertyDefinition;
 }
 
-export function PropertyItem({ label, value, type, id, propertyKey }: PropertyItemProps) {
+export function PropertyItem({ label, value, type, id, propertyKey, propertyDefinition }: PropertyItemProps) {
     const [history, setHistory] = useState<PropertyHistoryEntry[]>([]);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -57,6 +59,7 @@ export function PropertyItem({ label, value, type, id, propertyKey }: PropertyIt
                         id={id}
                         propertyKey={propertyKey}
                         value={value}
+                        propertyDefinition={propertyDefinition}
                     />
                 </div>
                 <Dialog open={open} onOpenChange={setOpen}>
