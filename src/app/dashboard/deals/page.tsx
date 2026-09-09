@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
 import { CreateRecordDialog } from "@/components/dashboard/create-record-dialog";
+import { SchemaLinkButton } from "@/components/dashboard/schema-link-button";
 import { formatDateForDisplay, getErrorMessage } from "@/lib/utils";
 import { buildSchemaIndexColumns, getRequestedSchemaProperties, getSchemaPropertyNames, parseSelectedColumns } from "@/lib/object-index-columns";
 import type { HubSpotObject } from "@/types/hubspot";
@@ -23,12 +24,11 @@ export default async function DealsPage({
     const { query = "", after, searchField, columns: columnParam } = await searchParams;
     const selectedColumnKeys = parseSelectedColumns(columnParam);
     const defaultVisibleColumns = ["dealname", "amount", "dealstage", "createdAt"];
-    const defaultProperties = ["dealname", "amount", "dealstage", "createdate"];
 
     try {
         const [schemaProperties, response] = await Promise.all([
             getSchemaProperties("deals"),
-            getDeals(100, after, query, searchField, getRequestedSchemaProperties(selectedColumnKeys, defaultProperties))
+            getDeals(100, after, query, searchField, getRequestedSchemaProperties(selectedColumnKeys))
         ]);
         const deals = response.results.map((deal) => {
             const record = deal as HubSpotObject;
@@ -66,6 +66,7 @@ export default async function DealsPage({
                     <div className="flex flex-wrap items-center gap-2">
                     <Search placeholder="Search deals..." properties={getSchemaPropertyNames(schemaProperties)} />
                     <CreateRecordDialog type="deals" />
+                    <SchemaLinkButton objectType="deals" />
                     <RefreshObjectButton objectType="deals" />
                     <DeletedRecordsView objectType="deals" />
                 </div>

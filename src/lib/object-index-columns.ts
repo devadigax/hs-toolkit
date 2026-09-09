@@ -21,8 +21,8 @@ export function getSchemaPropertyNames(properties: HubSpotPropertyDefinition[]) 
     return properties.map((property) => property.name);
 }
 
-export function getRequestedSchemaProperties(selectedColumns: string[] | undefined, defaultProperties: string[]) {
-    return Array.from(new Set([...(selectedColumns ?? []), ...defaultProperties]))
+export function getRequestedSchemaProperties(selectedColumns: string[] | undefined) {
+    return Array.from(new Set(selectedColumns ?? []))
         .filter((key) => !NON_SCHEMA_COLUMNS.has(key));
 }
 

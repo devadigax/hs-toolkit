@@ -1,11 +1,13 @@
-import { getQuotes, getAllProperties } from "@/lib/actions";
+import { getQuotes, getSchemaProperties } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
 import { Card, CardContent } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
+import { SchemaLinkButton } from "@/components/dashboard/schema-link-button";
 import { formatDateForDisplay, getErrorMessage } from "@/lib/utils";
+import { buildSchemaIndexColumns, getRequestedSchemaProperties, getSchemaPropertyNames, parseSelectedColumns } from "@/lib/object-index-columns";
 import type { HubSpotObject } from "@/types/hubspot";
 
 export default async function QuotesPage({
@@ -15,17 +17,18 @@ export default async function QuotesPage({
         query?: string;
         after?: string;
         searchField?: string;
+        columns?: string;
     }>;
 }) {
-    const { query = "", after, searchField } = await searchParams;
+    const { query = "", after, searchField, columns: columnParam } = await searchParams;
+    const selectedColumnKeys = parseSelectedColumns(columnParam);
+    const defaultVisibleColumns = ["hs_title", "hs_quote_amount", "hs_status", "createdAt"];
 
     try {
-        const [response, allProperties] = await Promise.all([
-            getQuotes(100, after, query, searchField),
-            getAllProperties("quotes")
+        const [schemaProperties, response] = await Promise.all([
+            getSchemaProperties("quotes"),
+            getQuotes(100, after, query, searchField, getRequestedSchemaProperties(selectedColumnKeys))
         ]);
-        // Quotes API response structure might differ slightly, checking generic basicApi response
-        // Assuming results exists
         const quotes = response.results.map((quote) => {
             const record = quote as HubSpotObject;
             return {
@@ -41,29 +44,39 @@ export default async function QuotesPage({
         });
         const nextCursor = response.paging?.next?.after;
 
-        const columns = [
-            { header: "Title", accessorKey: "hs_title" },
-            { header: "Amount", accessorKey: "hs_quote_amount" },
-            { header: "Status", accessorKey: "hs_status" },
-            { header: "Expiration Date", accessorKey: "hs_expiration_date", hiddenByDefault: true },
-            { header: "Created At", accessorKey: "createdAt" },
-            { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
-            { header: "Source", accessorKey: "source", hiddenByDefault: true },
-        ];
+        const schemaPropertyNames = getSchemaPropertyNames(schemaProperties);
+        const columns = buildSchemaIndexColumns({
+            schemaProperties,
+            leadingColumns: [],
+            trailingColumns: [
+                { header: "Expiration Date", accessorKey: "hs_expiration_date", hiddenByDefault: true },
+                { header: "Created At", accessorKey: "createdAt" },
+                { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
+                { header: "Source", accessorKey: "source", hiddenByDefault: true },
+            ],
+            defaultVisible: defaultVisibleColumns,
+        });
 
         return (
             <div className="flex-1 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Quotes</h2>
                     <div className="flex flex-wrap items-center gap-2">
-                    <Search placeholder="Search quotes..." properties={allProperties} />
-                    <RefreshObjectButton objectType="quotes" />
-                    <DeletedRecordsView objectType="quotes" />
-                </div>
+                        <Search placeholder="Search quotes..." properties={schemaPropertyNames} />
+                        <SchemaLinkButton objectType="quotes" />
+                        <RefreshObjectButton objectType="quotes" />
+                        <DeletedRecordsView objectType="quotes" />
+                    </div>
                 </div>
                 <Card>
                     <CardContent className="pt-6">
-                        <DataTable title="All Quotes" data={quotes} columns={columns} />
+                        <DataTable
+                            title="All Quotes"
+                            data={quotes}
+                            columns={columns}
+                            syncColumnVisibility
+                            selectedColumnKeys={selectedColumnKeys}
+                        />
                         <PaginationControls nextCursor={nextCursor} />
                     </CardContent>
                 </Card>

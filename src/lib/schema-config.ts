@@ -1,6 +1,20 @@
-export const SCHEMA_OBJECT_TYPES = ["contacts", "companies", "deals"] as const;
+export const SCHEMA_OBJECT_TYPES = ["contacts", "companies", "deals", "products", "line-items", "tickets", "quotes"] as const;
 
 export type SchemaObjectType = (typeof SCHEMA_OBJECT_TYPES)[number];
+
+export const SCHEMA_OBJECT_LABELS: Record<SchemaObjectType, string> = {
+    contacts: "Contacts",
+    companies: "Companies",
+    deals: "Deals",
+    products: "Products",
+    "line-items": "Line Items",
+    tickets: "Tickets",
+    quotes: "Quotes",
+};
+
+export function getSchemaApiObjectType(objectType: SchemaObjectType) {
+    return objectType === "line-items" ? "line_items" : objectType;
+}
 
 export const SCHEMA_FIELD_CONFIGS = [
     { value: "string:text", label: "Single-line text", type: "string", fieldType: "text", referencedObjectType: undefined },

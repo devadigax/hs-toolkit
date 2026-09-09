@@ -24,12 +24,13 @@ export function RefreshObjectButton({ objectType }: RefreshObjectButtonProps) {
     return (
         <Button
             variant="outline"
-            size="sm"
+            size="icon-sm"
             onClick={handleRefresh}
             disabled={isPending}
+            title="Refresh list"
         >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
-            Refresh List
+            <RefreshCw className={`h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
+            <span className="sr-only">Refresh list</span>
         </Button>
     );
 }

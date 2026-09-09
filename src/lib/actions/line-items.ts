@@ -4,9 +4,10 @@ import { getHubSpotClient } from "@/lib/hubspot-server";
 import { searchObjects, SearchCapableApi } from "./common";
 import { serialize } from "@/lib/utils";
 import { OBJECT_PROPERTIES } from "./config";
+import { mergeProperties } from "./property-utils";
 import type { AssociationBatchReadResponse, FilterGroup, HubSpotAssociationResult, HubSpotObject } from "@/types/hubspot";
 
-export async function getLineItems(limit: number = 100, after?: string, query?: string, searchField?: string) {
+export async function getLineItems(limit: number = 100, after?: string, query?: string, searchField?: string, requestedProperties: string[] = []) {
     const hubspotClient = await getHubSpotClient();
     let response;
 
@@ -24,7 +25,7 @@ export async function getLineItems(limit: number = 100, after?: string, query?: 
 
         response = await searchObjects(
             hubspotClient.crm.lineItems.searchApi as unknown as SearchCapableApi,
-            OBJECT_PROPERTIES["line-items"],
+            mergeProperties([...OBJECT_PROPERTIES["line-items"]], requestedProperties),
             limit,
             after,
             filterGroups
@@ -32,7 +33,7 @@ export async function getLineItems(limit: number = 100, after?: string, query?: 
     } else {
         response = await searchObjects(
             hubspotClient.crm.lineItems.searchApi as unknown as SearchCapableApi,
-            OBJECT_PROPERTIES["line-items"],
+            mergeProperties([...OBJECT_PROPERTIES["line-items"]], requestedProperties),
             limit,
             after,
             []

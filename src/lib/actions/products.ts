@@ -3,9 +3,10 @@
 import { getHubSpotClient } from "@/lib/hubspot-server";
 import { searchObjects, SearchCapableApi } from "./common";
 import { OBJECT_PROPERTIES } from "./config";
+import { mergeProperties } from "./property-utils";
 import type { Filter, FilterGroup } from "@/types/hubspot";
 
-export async function getProducts(limit: number = 100, after?: string, query?: string, showInactive: boolean = false, searchField?: string) {
+export async function getProducts(limit: number = 100, after?: string, query?: string, showInactive: boolean = false, searchField?: string, requestedProperties: string[] = []) {
     const hubspotClient = await getHubSpotClient();
 
     const filterGroups: FilterGroup[] = [];
@@ -32,7 +33,7 @@ export async function getProducts(limit: number = 100, after?: string, query?: s
 
     return searchObjects(
         hubspotClient.crm.products.searchApi as unknown as SearchCapableApi,
-        OBJECT_PROPERTIES.products,
+        mergeProperties([...OBJECT_PROPERTIES.products], requestedProperties),
         limit,
         after,
         filterGroups

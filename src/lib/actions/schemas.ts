@@ -5,7 +5,7 @@ import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { Client } from "@hubspot/api-client";
 import { getErrorMessage, serialize } from "@/lib/utils";
 import { hashString } from "@/lib/server-utils";
-import { SCHEMA_FIELD_CONFIGS, SCHEMA_OBJECT_TYPES, type SchemaObjectType } from "@/lib/schema-config";
+import { SCHEMA_FIELD_CONFIGS, SCHEMA_OBJECT_TYPES, getSchemaApiObjectType, type SchemaObjectType } from "@/lib/schema-config";
 import type {
     CustomObjectSchema,
     HubSpotPropertyDefinition,
@@ -154,13 +154,14 @@ export async function getCustomObjectSchemas() {
 
 export async function getSchemaProperties(objectType: string) {
     assertSchemaObjectType(objectType);
+    const apiObjectType = getSchemaApiObjectType(objectType);
     const accessToken = await getAccessToken();
 
     return unstable_cache(
         async (token: string, type: SchemaObjectType) => {
             const hubspotClient = new Client({ accessToken: token });
             try {
-                const response = await hubspotClient.crm.properties.coreApi.getAll(type, false, PROPERTY_DEFINITION_FIELDS);
+                const response = await hubspotClient.crm.properties.coreApi.getAll(getSchemaApiObjectType(type), false, PROPERTY_DEFINITION_FIELDS);
                 const properties = serialize((response as PropertiesResponse).results);
 
                 return properties.sort((a, b) => {
@@ -177,7 +178,7 @@ export async function getSchemaProperties(objectType: string) {
                 throw e;
             }
         },
-        ["schema-properties", objectType, hashString(accessToken)],
+        ["schema-properties", apiObjectType, hashString(accessToken)],
         {
             tags: [`schema-properties-${objectType}`],
             revalidate: 3600,
@@ -187,13 +188,14 @@ export async function getSchemaProperties(objectType: string) {
 
 export async function getSchemaPropertyGroups(objectType: string) {
     assertSchemaObjectType(objectType);
+    const apiObjectType = getSchemaApiObjectType(objectType);
     const accessToken = await getAccessToken();
 
     return unstable_cache(
         async (token: string, type: SchemaObjectType) => {
             const hubspotClient = new Client({ accessToken: token });
             try {
-                const response = await hubspotClient.crm.properties.groupsApi.getAll(type);
+                const response = await hubspotClient.crm.properties.groupsApi.getAll(getSchemaApiObjectType(type));
                 const groups = serialize((response as PropertyGroupsResponse).results);
 
                 return groups.sort((a, b) => {
@@ -208,7 +210,7 @@ export async function getSchemaPropertyGroups(objectType: string) {
                 throw e;
             }
         },
-        ["schema-property-groups", objectType, hashString(accessToken)],
+        ["schema-property-groups", apiObjectType, hashString(accessToken)],
         {
             tags: [`schema-property-groups-${objectType}`],
             revalidate: 3600,
@@ -218,6 +220,7 @@ export async function getSchemaPropertyGroups(objectType: string) {
 
 export async function updateSchemaProperty(objectType: string, propertyName: string, input: SchemaPropertyUpdateInput) {
     assertSchemaObjectType(objectType);
+    const apiObjectType = getSchemaApiObjectType(objectType);
 
     if (!propertyName.trim()) {
         return { success: false, error: "Property name is required." };
@@ -230,7 +233,7 @@ export async function updateSchemaProperty(objectType: string, propertyName: str
     try {
         const hubspotClient = new Client({ accessToken: await getAccessToken() });
         const existingProperty = serialize(
-            await hubspotClient.crm.properties.coreApi.getByName(objectType, propertyName, false, PROPERTY_DEFINITION_FIELDS)
+            await hubspotClient.crm.properties.coreApi.getByName(apiObjectType, propertyName, false, PROPERTY_DEFINITION_FIELDS)
         ) as HubSpotPropertyDefinition;
 
         if (existingProperty.modificationMetadata?.readOnlyDefinition) {
@@ -265,7 +268,7 @@ export async function updateSchemaProperty(objectType: string, propertyName: str
         };
 
         const response = await hubspotClient.crm.properties.coreApi.update(
-            objectType,
+            apiObjectType,
             propertyName,
             updatePayload as Parameters<typeof hubspotClient.crm.properties.coreApi.update>[2]
         );
@@ -283,6 +286,7 @@ export async function updateSchemaProperty(objectType: string, propertyName: str
 
 export async function createSchemaProperty(objectType: string, input: SchemaPropertyCreateInput) {
     assertSchemaObjectType(objectType);
+    const apiObjectType = getSchemaApiObjectType(objectType);
 
     const name = input.name.trim();
     const groupName = input.groupName.trim();
@@ -312,7 +316,7 @@ export async function createSchemaProperty(objectType: string, input: SchemaProp
     try {
         const hubspotClient = new Client({ accessToken: await getAccessToken() });
         const response = await hubspotClient.crm.properties.coreApi.create(
-            objectType,
+            apiObjectType,
             {
                 ...propertyPayload.payload,
                 name,

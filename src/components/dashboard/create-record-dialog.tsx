@@ -105,22 +105,24 @@ export function CreateRecordDialog({ type, triggerLabel, properties: propList, o
                     {triggerLabel || `Create ${objectLabel || type}`}
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[760px]">
                 <DialogHeader>
                     <DialogTitle>Create New {objectLabel || type}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 py-4">
-                    {properties.map((prop) => (
-                        <div key={prop} className="grid w-full items-center gap-1.5">
-                            <Label htmlFor={prop}>{formatLabel(prop)}</Label>
-                            <Input
-                                id={prop}
-                                value={formData[prop] ?? ""}
-                                onChange={(e) => handleInputChange(prop, e.target.value)}
-                                placeholder={`Enter ${formatLabel(prop).toLowerCase()}`}
-                            />
-                        </div>
-                    ))}
+                    <div className="grid gap-4 md:grid-cols-2">
+                        {properties.map((prop) => (
+                            <div key={prop} className="grid w-full items-center gap-1.5">
+                                <Label htmlFor={prop}>{formatLabel(prop)}</Label>
+                                <Input
+                                    id={prop}
+                                    value={formData[prop] ?? ""}
+                                    onChange={(e) => handleInputChange(prop, e.target.value)}
+                                    placeholder={`Enter ${formatLabel(prop).toLowerCase()}`}
+                                />
+                            </div>
+                        ))}
+                    </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                             Cancel

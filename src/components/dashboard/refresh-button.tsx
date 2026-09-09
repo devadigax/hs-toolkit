@@ -20,12 +20,13 @@ export function RefreshButton() {
     return (
         <Button
             variant="outline"
-            size="sm"
+            size="icon-sm"
             onClick={handleRefresh}
             disabled={isPending}
+            title="Refresh data"
         >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
-            Refresh Data
+            <RefreshCw className={`h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
+            <span className="sr-only">Refresh data</span>
         </Button>
     );
 }

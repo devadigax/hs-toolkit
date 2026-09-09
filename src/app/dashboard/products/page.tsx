@@ -1,4 +1,4 @@
-import { getProducts, getAllProperties } from "@/lib/actions";
+import { getProducts, getSchemaProperties } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,7 +6,9 @@ import { Search } from "@/components/ui/search";
 import { InactiveToggle } from "@/components/dashboard/inactive-toggle";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
+import { SchemaLinkButton } from "@/components/dashboard/schema-link-button";
 import { formatDateForDisplay, getErrorMessage } from "@/lib/utils";
+import { buildSchemaIndexColumns, getRequestedSchemaProperties, getSchemaPropertyNames, parseSelectedColumns } from "@/lib/object-index-columns";
 import type { HubSpotObject } from "@/types/hubspot";
 
 export default async function ProductsPage({
@@ -17,15 +19,18 @@ export default async function ProductsPage({
         query?: string;
         showInactive?: string;
         searchField?: string;
+        columns?: string;
     }>;
 }) {
-    const { after, query, showInactive, searchField } = await searchParams;
+    const { after, query, showInactive, searchField, columns: columnParam } = await searchParams;
     const showInactiveBool = showInactive === 'true';
+    const selectedColumnKeys = parseSelectedColumns(columnParam);
+    const defaultVisibleColumns = ["name", "hs_sku", "price", "hs_status", "createdAt"];
 
     try {
-        const [response, allProperties] = await Promise.all([
-            getProducts(100, after, query, showInactiveBool, searchField),
-            getAllProperties("products")
+        const [schemaProperties, response] = await Promise.all([
+            getSchemaProperties("products"),
+            getProducts(100, after, query, showInactiveBool, searchField, getRequestedSchemaProperties(selectedColumnKeys))
         ]);
         const products = response.results.map((product) => {
             const record = product as HubSpotObject;
@@ -44,32 +49,38 @@ export default async function ProductsPage({
         });
         const nextCursor = response.paging?.next?.after;
 
-        const columns = [
-            { header: "Name", accessorKey: "name" },
-            { header: "SKU", accessorKey: "hs_sku" },
-            { header: "Description", accessorKey: "description", hiddenByDefault: true },
-            { header: "Price", accessorKey: "price" },
-            { header: "Status", accessorKey: "hs_status" },
-            { header: "Folder ID", accessorKey: "hs_folder_id", hiddenByDefault: true },
-            { header: "Created At", accessorKey: "createdAt" },
-            { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
-            { header: "Source", accessorKey: "source", hiddenByDefault: true },
-        ];
+        const columns = buildSchemaIndexColumns({
+            schemaProperties,
+            leadingColumns: [],
+            trailingColumns: [
+                { header: "Created At", accessorKey: "createdAt" },
+                { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
+                { header: "Source", accessorKey: "source", hiddenByDefault: true },
+            ],
+            defaultVisible: defaultVisibleColumns,
+        });
 
         return (
             <div className="flex-1 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Products</h2>
                     <div className="flex flex-wrap items-center gap-2">
-                        <Search placeholder="Search products..." properties={allProperties} />
+                        <Search placeholder="Search products..." properties={getSchemaPropertyNames(schemaProperties)} />
                         <InactiveToggle />
+                        <SchemaLinkButton objectType="products" />
                         <RefreshObjectButton objectType="products" />
                         <DeletedRecordsView objectType="products" />
                     </div>
                 </div>
                 <Card>
                     <CardContent className="pt-6">
-                        <DataTable title="All Products" data={products} columns={columns} />
+                        <DataTable
+                            title="All Products"
+                            data={products}
+                            columns={columns}
+                            syncColumnVisibility
+                            selectedColumnKeys={selectedColumnKeys}
+                        />
                         <PaginationControls nextCursor={nextCursor} />
                     </CardContent>
                 </Card>

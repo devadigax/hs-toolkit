@@ -4,15 +4,9 @@ import { SchemaPropertiesTable } from "@/components/dashboard/schema-properties-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getSchemaProperties, getSchemaPropertyGroups } from "@/lib/actions";
-import { SCHEMA_OBJECT_TYPES } from "@/lib/schema-config";
+import { SCHEMA_OBJECT_LABELS, SCHEMA_OBJECT_TYPES } from "@/lib/schema-config";
 import { cn, getErrorMessage } from "@/lib/utils";
 import type { HubSpotPropertyDefinition, HubSpotPropertyGroup } from "@/types/hubspot";
-
-const OBJECT_LABELS: Record<string, string> = {
-    contacts: "Contacts",
-    companies: "Companies",
-    deals: "Deals",
-};
 
 export default async function ObjectSchemaPage({
     params,
@@ -62,7 +56,7 @@ export default async function ObjectSchemaPage({
     return (
         <div className="flex-1 space-y-4">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <h2 className="text-3xl font-bold tracking-tight">{OBJECT_LABELS[objectType]} Schema</h2>
+                <h2 className="text-3xl font-bold tracking-tight">{SCHEMA_OBJECT_LABELS[objectType as keyof typeof SCHEMA_OBJECT_LABELS]} Schema</h2>
                 <div className="flex flex-wrap items-center gap-2">
                     {SCHEMA_OBJECT_TYPES.map((type) => (
                         <Button
@@ -72,7 +66,7 @@ export default async function ObjectSchemaPage({
                             size="sm"
                             className={cn(type === objectType && "pointer-events-none")}
                         >
-                            <Link href={`/dashboard/schema/${type}`}>{OBJECT_LABELS[type]}</Link>
+                            <Link href={`/dashboard/schema/${type}`}>{SCHEMA_OBJECT_LABELS[type]}</Link>
                         </Button>
                     ))}
                 </div>

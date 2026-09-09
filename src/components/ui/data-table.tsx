@@ -121,6 +121,9 @@ export function DataTable({
     };
 
     const setColumnVisibility = (accessorKey: string, isVisible: boolean) => {
+        const visibleCount = Object.values(visibleColumns).filter(Boolean).length;
+        if (!isVisible && visibleCount <= 1) return;
+
         const nextVisibility = {
             ...visibleColumns,
             [accessorKey]: isVisible,
@@ -140,7 +143,8 @@ export function DataTable({
                 params.delete("columns");
             }
 
-            router.replace(`${pathname}?${params.toString()}`);
+            const nextQuery = params.toString();
+            router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname);
         }
     };
 
@@ -167,11 +171,15 @@ export function DataTable({
                             />
                         </div>
                         {filteredColumns.map((column) => {
+                            const isOnlyVisibleColumn = Boolean(visibleColumns[column.accessorKey])
+                                && Object.values(visibleColumns).filter(Boolean).length <= 1;
+
                             return (
                                 <DropdownMenuCheckboxItem
                                     key={column.accessorKey}
                                     className="capitalize"
                                     checked={visibleColumns[column.accessorKey]}
+                                    disabled={isOnlyVisibleColumn}
                                     onCheckedChange={(value) => setColumnVisibility(column.accessorKey, !!value)}
                                 >
                                     {column.header}

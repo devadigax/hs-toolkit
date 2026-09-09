@@ -1,11 +1,13 @@
-import { getLineItems, getAllProperties } from "@/lib/actions";
+import { getLineItems, getSchemaProperties } from "@/lib/actions";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Search } from "@/components/ui/search";
 import { Card, CardContent } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
+import { SchemaLinkButton } from "@/components/dashboard/schema-link-button";
 import { formatDateForDisplay, getErrorMessage } from "@/lib/utils";
+import { buildSchemaIndexColumns, getRequestedSchemaProperties, getSchemaPropertyNames, parseSelectedColumns } from "@/lib/object-index-columns";
 import type { HubSpotAssociationCollection, HubSpotObject } from "@/types/hubspot";
 
 export default async function LineItemsPage({
@@ -15,14 +17,17 @@ export default async function LineItemsPage({
         after?: string;
         query?: string;
         searchField?: string;
+        columns?: string;
     }>;
 }) {
-    const { after, query, searchField } = await searchParams;
+    const { after, query, searchField, columns: columnParam } = await searchParams;
+    const selectedColumnKeys = parseSelectedColumns(columnParam);
+    const defaultVisibleColumns = ["name", "hs_sku", "price", "quantity", "amount", "createdAt"];
 
     try {
-        const [response, allProperties] = await Promise.all([
-            getLineItems(100, after, query, searchField),
-            getAllProperties("line-items")
+        const [schemaProperties, response] = await Promise.all([
+            getSchemaProperties("line-items"),
+            getLineItems(100, after, query, searchField, getRequestedSchemaProperties(selectedColumnKeys))
         ]);
 
         // Format associations for display
@@ -58,33 +63,38 @@ export default async function LineItemsPage({
 
         const nextCursor = response.paging?.next?.after;
 
-        const columns = [
-            { header: "Name", accessorKey: "name" },
-            { header: "SKU", accessorKey: "hs_sku" },
-            { header: "Description", accessorKey: "description", hiddenByDefault: true },
-            { header: "Price", accessorKey: "price" },
-            { header: "Quantity", accessorKey: "quantity" },
-            { header: "Amount", accessorKey: "amount" },
-            { header: "Discount", accessorKey: "discount", hiddenByDefault: true },
-            { header: "Associations", accessorKey: "associationsSummary", hiddenByDefault: true },
-            { header: "Created At", accessorKey: "createdAt" },
-            { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
-            { header: "Source", accessorKey: "source", hiddenByDefault: true },
-        ];
+        const columns = buildSchemaIndexColumns({
+            schemaProperties,
+            leadingColumns: [],
+            trailingColumns: [
+                { header: "Associations", accessorKey: "associationsSummary", hiddenByDefault: true },
+                { header: "Created At", accessorKey: "createdAt" },
+                { header: "Last Modified", accessorKey: "lastModifiedAt", hiddenByDefault: true },
+                { header: "Source", accessorKey: "source", hiddenByDefault: true },
+            ],
+            defaultVisible: defaultVisibleColumns,
+        });
 
         return (
             <div className="flex-1 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-3xl font-bold tracking-tight">Line Items</h2>
                     <div className="flex flex-wrap items-center gap-2">
-                    <Search placeholder="Search line items..." properties={allProperties} />
-                    <RefreshObjectButton objectType="line-items" />
-                    <DeletedRecordsView objectType="line-items" />
-                </div>
+                        <Search placeholder="Search line items..." properties={getSchemaPropertyNames(schemaProperties)} />
+                        <SchemaLinkButton objectType="line-items" />
+                        <RefreshObjectButton objectType="line-items" />
+                        <DeletedRecordsView objectType="line-items" />
+                    </div>
                 </div>
                 <Card>
                     <CardContent className="pt-6">
-                        <DataTable title="All Line Items" data={lineItems} columns={columns} />
+                        <DataTable
+                            title="All Line Items"
+                            data={lineItems}
+                            columns={columns}
+                            syncColumnVisibility
+                            selectedColumnKeys={selectedColumnKeys}
+                        />
                         <PaginationControls nextCursor={nextCursor} />
                     </CardContent>
                 </Card>

@@ -5,6 +5,7 @@ import { unstable_cache, updateTag } from "next/cache";
 import { Client } from "@hubspot/api-client";
 import { getErrorMessage, serialize } from "@/lib/utils";
 import { OBJECT_PROPERTIES, ASSOCIATION_MAP, DEFAULT_SORT } from "./config";
+import { mergeProperties } from "./property-utils";
 import { hashString } from "@/lib/server-utils";
 import type { FilterGroup, Sort, HubSpotSearchRequest, HubSpotObject, HubSpotAssociation, HubSpotAssociationCollection, HubSpotAssociationResult } from "@/types/hubspot";
 
@@ -51,10 +52,6 @@ type ObjectApiGroup = {
 
 export interface SearchCapableApi {
     doSearch(request: HubSpotSearchRequest): Promise<SearchResponse>;
-}
-
-function mergeProperties(baseProperties: string[], requestedProperties: string[] = []) {
-    return Array.from(new Set([...baseProperties, ...requestedProperties.filter(Boolean)]));
 }
 
 export async function searchObjects(

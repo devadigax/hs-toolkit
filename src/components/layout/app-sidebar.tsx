@@ -37,6 +37,7 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { SCHEMA_OBJECT_LABELS, SCHEMA_OBJECT_TYPES } from "@/lib/schema-config";
 import type { CustomObjectSchema } from "@/types/hubspot";
 
 const links = [
@@ -102,20 +103,10 @@ const links = [
     },
 ];
 
-const schemaLinks = [
-    {
-        href: "/dashboard/schema/contacts",
-        label: "Contacts",
-    },
-    {
-        href: "/dashboard/schema/companies",
-        label: "Companies",
-    },
-    {
-        href: "/dashboard/schema/deals",
-        label: "Deals",
-    },
-];
+const schemaLinks = SCHEMA_OBJECT_TYPES.map((type) => ({
+    href: `/dashboard/schema/${type}`,
+    label: SCHEMA_OBJECT_LABELS[type],
+}));
 
 export function AppSidebar({ customObjects = [] }: { customObjects?: CustomObjectSchema[] }) {
     const pathname = usePathname();

@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
 import { CreateRecordDialog } from "@/components/dashboard/create-record-dialog";
+import { SchemaLinkButton } from "@/components/dashboard/schema-link-button";
 import { formatDateForDisplay, getErrorMessage } from "@/lib/utils";
 import { buildSchemaIndexColumns, getRequestedSchemaProperties, getSchemaPropertyNames, parseSelectedColumns } from "@/lib/object-index-columns";
 import type { HubSpotObject } from "@/types/hubspot";
@@ -23,12 +24,11 @@ export default async function ContactsPage({
     const { query = "", after, searchField, columns: columnParam } = await searchParams;
     const selectedColumnKeys = parseSelectedColumns(columnParam);
     const defaultVisibleColumns = ["fullName", "email", "phone", "company", "createdAt"];
-    const defaultProperties = ["firstname", "lastname", "email", "phone", "company", "createdate"];
 
     try {
         const [schemaProperties, response] = await Promise.all([
             getSchemaProperties("contacts"),
-            getContacts(100, after, query, searchField, getRequestedSchemaProperties(selectedColumnKeys, defaultProperties))
+            getContacts(100, after, query, searchField, getRequestedSchemaProperties(selectedColumnKeys))
         ]);
 
         const contacts = response.results.map((contact) => {
@@ -72,6 +72,7 @@ export default async function ContactsPage({
                     <div className="flex flex-wrap items-center gap-2">
                     <Search placeholder="Search contacts..." properties={getSchemaPropertyNames(schemaProperties)} />
                     <CreateRecordDialog type="contacts" />
+                    <SchemaLinkButton objectType="contacts" />
                     <RefreshObjectButton objectType="contacts" />
                     <DeletedRecordsView objectType="contacts" />
                 </div>

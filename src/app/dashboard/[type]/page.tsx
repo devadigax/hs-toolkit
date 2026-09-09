@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RefreshObjectButton } from "@/components/dashboard/refresh-object-button";
 import { DeletedRecordsView } from "@/components/dashboard/deleted-records-view";
 import { CreateRecordDialog } from "@/components/dashboard/create-record-dialog";
+import { SchemaLinkButton } from "@/components/dashboard/schema-link-button";
 import { getErrorMessage } from "@/lib/utils";
 import type { CustomObjectSchema, HubSpotObject } from "@/types/hubspot";
 
@@ -88,6 +89,7 @@ export default async function GenericObjectPage({
                     <div className="flex flex-wrap items-center gap-2">
                         <Search placeholder={`Search ${objectLabel}...`} properties={allProperties} />
                         <CreateRecordDialog type={type} properties={allProperties} objectLabel={schema?.labels.singular || type} />
+                        <SchemaLinkButton objectType={type} />
                         <RefreshObjectButton objectType={type} />
                         <DeletedRecordsView objectType={type} />
                     </div>
