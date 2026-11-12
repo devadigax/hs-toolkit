@@ -16,7 +16,7 @@ type UsersResponse = {
 export async function getUsers(limit: number = 100, after?: string) {
     const hubspotClient = await getHubSpotClient();
 
-    let path = '/settings/v3/users/?limit=' + limit;
+    let path = '/settings/users/2026-09/?limit=' + limit;
     if (after) {
         path += '&after=' + after;
     }

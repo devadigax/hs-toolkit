@@ -421,7 +421,7 @@ export async function getObject(type: string, id: string) {
 
                 const v4Response = await hubspotClient.apiRequest({
                     method: 'POST',
-                    path: `/crm/v4/associations/${fromTypeStr}/${toTypeStr}/batch/read`,
+                    path: `/crm/associations/2026-09/${fromTypeStr}/${toTypeStr}/batch/read`,
                     body: {
                         inputs: [{ id }]
                     }
@@ -462,7 +462,7 @@ async function getEngagementObject(hubspotClient: Client, id: string) {
         const properties = await getAllProperties("engagements");
         const response = await hubspotClient.apiRequest({
             method: 'GET',
-            path: `/crm/v3/objects/engagements/${id}?properties=${properties.join(',')}&associations=contacts,companies,deals,tickets`,
+            path: `/crm/objects/2026-09/engagements/${id}?properties=${properties.join(',')}&associations=contacts,companies,deals,tickets`,
         });
         const result = await response.json() as { status?: string };
 
@@ -508,7 +508,7 @@ async function enrichAssociations(hubspotClient: Client, associations: Record<st
                         const lineItemProps = ["name", "hs_name", "hs_sku", "createdate", "hs_createdate", "hs_created_by_user_id", "amount", "price", "quantity", "discount", "description"];
                         const batchResponse = await hubspotClient.apiRequest({
                             method: 'POST',
-                            path: '/crm/v3/objects/line_items/batch/read',
+                            path: '/crm/objects/2026-09/line_items/batch/read',
                             body: {
                                 inputs,
                                 properties: lineItemProps
@@ -536,7 +536,7 @@ async function enrichAssociations(hubspotClient: Client, associations: Record<st
                         const engagementProperties = ["hs_engagement_type", "hs_task_subject", "hs_meeting_title", "hs_note_body", "hs_body_preview", "hs_timestamp", "hs_created_by_user_id", "hs_created_by"];
                         const batchResponse = await hubspotClient.apiRequest({
                             method: 'POST',
-                            path: '/crm/v3/objects/engagements/batch/read',
+                            path: '/crm/objects/2026-09/engagements/batch/read',
                             body: {
                                 inputs,
                                 properties: engagementProperties

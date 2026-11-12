@@ -48,7 +48,7 @@ export async function getEngagements(limit: number = 20, after?: string, query?:
     try {
         const response = await hubspotClient.apiRequest({
             method: 'POST',
-            path: '/crm/v3/objects/engagements/search',
+            path: '/crm/objects/2026-09/engagements/search',
             body: searchRequest,
         });
 

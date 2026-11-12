@@ -90,7 +90,7 @@ export async function copyObjectEngagements(objectType: string, sourceId: string
 
             const searchResponse = await hubspotClient.apiRequest({
                 method: 'POST',
-                path: '/crm/v3/objects/engagements/search',
+                path: '/crm/objects/2026-09/engagements/search',
                 body: searchRequest,
             });
 
@@ -149,7 +149,7 @@ export async function copyObjectEngagements(objectType: string, sourceId: string
 
                 const response = await hubspotClient.apiRequest({
                     method: 'POST',
-                    path: `/crm/v4/associations/${v4Type}/${objectType}/batch/associate/default`,
+                    path: `/crm/associations/2026-09/${v4Type}/${objectType}/batch/associate/default`,
                     body: associationRequest,
                 });
 
@@ -191,7 +191,7 @@ export async function copyObjectEngagements(objectType: string, sourceId: string
 
                     const response = await hubspotClient.apiRequest({
                         method: 'POST',
-                        path: `/crm/v4/associations/${v4Type}/${objectType}/batch/archive`,
+                    path: `/crm/associations/2026-09/${v4Type}/${objectType}/batch/archive`,
                         body: archiveRequest,
                     });
                     if (!response.ok) {
@@ -268,7 +268,7 @@ export async function unlinkObjectEngagements(objectType: string, objectId: stri
 
                 const searchResponse = await hubspotClient.apiRequest({
                     method: 'POST',
-                    path: '/crm/v3/objects/engagements/search',
+                    path: '/crm/objects/2026-09/engagements/search',
                     body: searchRequest,
                 });
 
@@ -290,10 +290,10 @@ export async function unlinkObjectEngagements(objectType: string, objectId: stri
             }
         } else {
             // We have IDs but no types. We must fetch them.
-            // POST /crm/v3/objects/engagements/batch/read
+            // POST /crm/objects/2026-09/engagements/batch/read
             const batchReadResponse = await hubspotClient.apiRequest({
                 method: 'POST',
-                path: '/crm/v3/objects/engagements/batch/read',
+                path: '/crm/objects/2026-09/engagements/batch/read',
                 body: {
                     inputs: specificEngagementIds.map(id => ({ id })),
                     properties: ["hs_engagement_type"]
@@ -337,7 +337,7 @@ export async function unlinkObjectEngagements(objectType: string, objectId: stri
                 // ... (inside unlinkObjectEngagements loop)
                 const response = await hubspotClient.apiRequest({
                     method: 'POST',
-                    path: `/crm/v4/associations/${v4Type}/${objectType}/batch/archive`,
+                    path: `/crm/associations/2026-09/${v4Type}/${objectType}/batch/archive`,
                     body: archiveRequest,
                 });
 
@@ -383,7 +383,7 @@ export async function associateObjects(
     try {
         const hubspotClient = await getHubSpotClient();
 
-        // API Endpoint format: /crm/v4/associations/{fromObjectType}/{toObjectType}/batch/associate/default
+        // API endpoint format: /crm/associations/2026-09/{fromObjectType}/{toObjectType}/batch/associate/default
         // Note: For custom objects or specific association types, 'default' might not be enough, 
         // but for standard objects (contact <-> deal, etc.), it usually works or requires a specific ID.
         // We will try 'default' first.
@@ -401,7 +401,7 @@ export async function associateObjects(
 
         const response = await hubspotClient.apiRequest({
             method: 'POST',
-            path: `/crm/v4/associations/${fromObjectType}/${toObjectType}/batch/associate/default`,
+            path: `/crm/associations/2026-09/${fromObjectType}/${toObjectType}/batch/associate/default`,
             body: associationRequest,
         });
 
@@ -450,7 +450,7 @@ export async function linkDealToLineItem(dealId: string, lineItemId: string) {
 
         const response = await hubspotClient.apiRequest({
             method: 'POST',
-            path: '/crm/v4/associations/deals/line_items/batch/associate/default',
+            path: '/crm/associations/2026-09/deals/line_items/batch/associate/default',
             body: associationRequest,
         });
 
@@ -487,7 +487,7 @@ export async function unlinkDealFromLineItem(dealId: string, lineItemId: string)
 
         const response = await hubspotClient.apiRequest({
             method: 'POST',
-            path: '/crm/v4/associations/deals/line_items/batch/archive',
+            path: '/crm/associations/2026-09/deals/line_items/batch/archive',
             body: archiveRequest,
         });
 

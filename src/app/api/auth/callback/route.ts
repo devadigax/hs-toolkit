@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Client } from "@hubspot/api-client";
 import { COOKIE_NAME, REFRESH_TOKEN_COOKIE, EXPIRES_IN_COOKIE, OAUTH_STATE_COOKIE, PRIVATE_TOKEN_COOKIE } from "@/lib/constants";
 import { cookies } from "next/headers";
 import { getErrorMessage } from "@/lib/utils";
-
-const hubspotClient = new Client();
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
@@ -22,15 +19,24 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const tokenResponse = await hubspotClient.oauth.tokensApi.create(
-            "authorization_code",
-            code,
-            process.env.HUBSPOT_REDIRECT_URI,
-            process.env.HUBSPOT_CLIENT_ID,
-            process.env.HUBSPOT_CLIENT_SECRET
-        );
+        const tokenExchangeResponse = await fetch("https://api.hubapi.com/oauth/2026-09/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                grant_type: "authorization_code",
+                code,
+                redirect_uri: process.env.HUBSPOT_REDIRECT_URI || "",
+                client_id: process.env.HUBSPOT_CLIENT_ID || "",
+                client_secret: process.env.HUBSPOT_CLIENT_SECRET || "",
+            }),
+        });
 
-        const { accessToken, refreshToken, expiresIn } = tokenResponse;
+        if (!tokenExchangeResponse.ok) {
+            throw new Error(`HubSpot token exchange failed: ${tokenExchangeResponse.status}`);
+        }
+
+        const { access_token: accessToken, refresh_token: refreshToken, expires_in: expiresIn } =
+            await tokenExchangeResponse.json() as { access_token: string; refresh_token: string; expires_in: number };
         const response = NextResponse.redirect(new URL("/dashboard", request.url));
 
         // Set Access Token

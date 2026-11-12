@@ -46,17 +46,22 @@ export const getAccessToken = async () => {
     // Refresh token
     try {
         console.log("Access token expired or missing. Refreshing...");
-        const client = new Client();
-        const tokenResponse = await client.oauth.tokensApi.create(
-            "refresh_token",
-            undefined, // code is undefined for refresh_token grant
-            undefined, // redirectUri is optional or undefined for refresh_token grant
-            process.env.HUBSPOT_CLIENT_ID,
-            process.env.HUBSPOT_CLIENT_SECRET,
-            refreshToken
-        );
+        const response = await fetch("https://api.hubapi.com/oauth/2026-09/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                grant_type: "refresh_token",
+                client_id: process.env.HUBSPOT_CLIENT_ID || "",
+                client_secret: process.env.HUBSPOT_CLIENT_SECRET || "",
+                refresh_token: refreshToken,
+            }),
+        });
 
-        const { accessToken: newAccessToken } = tokenResponse;
+        if (!response.ok) {
+            throw new Error(`HubSpot token refresh failed: ${response.status}`);
+        }
+
+        const { access_token: newAccessToken } = await response.json() as { access_token: string };
 
         // Note: We don't save cookies here because this might run in a Server Component.
         // Middleware (src/proxy.ts) handles the persistence of refreshed tokens.

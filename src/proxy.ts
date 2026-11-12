@@ -31,7 +31,7 @@ export async function proxy(request: NextRequest) {
         try {
             // We must use fetch here because @hubspot/api-client might not work in Edge runtime appropriately
             // or to keep it lightweight.
-            const response = await fetch("https://api.hubapi.com/oauth/v1/token", {
+            const response = await fetch("https://api.hubapi.com/oauth/2026-09/token", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",

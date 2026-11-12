@@ -14,7 +14,7 @@ export async function getMarketingEvents(limit: number = 100, after?: string) {
 
     const response = await client.apiRequest({
         method: 'GET',
-        path: `/marketing/v3/marketing-events?${query.toString()}`
+        path: `/marketing/marketing-events/2026-09?${query.toString()}`
     });
 
     const result = (await response.json()) as MarketingEventsResponse;
@@ -35,7 +35,7 @@ export async function getMarketingEventByObjectId(objectId: string) {
     try {
         const response = await client.apiRequest({
             method: 'GET',
-            path: `/marketing/v3/marketing-events/${objectId}`
+            path: `/marketing/marketing-events/2026-09/${objectId}`
         });
         const result = (await response.json()) as MarketingEvent;
 
@@ -68,7 +68,7 @@ export async function createMarketingEvent(properties: Record<string, string>) {
     try {
         const response = await client.apiRequest({
             method: 'POST',
-            path: '/marketing/v3/marketing-events/events',
+            path: '/marketing/marketing-events/2026-09/events',
             body
         });
 
@@ -88,7 +88,7 @@ export async function updateMarketingEventReq(objectId: string, properties: Reco
     try {
         const response = await client.apiRequest({
             method: 'PATCH',
-            path: `/marketing/v3/marketing-events/${objectId}`,
+            path: `/marketing/marketing-events/2026-09/${objectId}`,
             body: properties
         });
 

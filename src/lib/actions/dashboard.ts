@@ -53,7 +53,7 @@ export async function getAccountDetails() {
         try {
             const response = await hubspotClient.apiRequest({
                 method: 'GET',
-                path: '/account-info/v3/details',
+                path: '/account-info/2026-09/details',
             });
             const json = await response.json();
             return serialize(json as AccountDetails);
@@ -72,7 +72,7 @@ export async function getDailyApiUsage() {
         try {
             const response = await hubspotClient.apiRequest({
                 method: 'GET',
-                path: '/account-info/v3/api-usage/daily/private-apps',
+                path: '/account-info/2026-09/api-usage/daily/private-apps',
             });
             const json = await response.json();
             return serialize(json as ApiUsageResponse);
